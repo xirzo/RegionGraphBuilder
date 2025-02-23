@@ -1,5 +1,6 @@
 #include <ogdf/basic/Graph.h>
 #include <ogdf/basic/GraphAttributes.h>
+#include <ogdf/basic/graphics.h>
 #include <ogdf/fileformats/GraphIO.h>
 #include <ogdf/layered/MedianHeuristic.h>
 #include <ogdf/layered/OptimalHierarchyLayout.h>
@@ -106,7 +107,12 @@ int main(void) {
     GraphAttributes graph_attribute(
         graph, GraphAttributes::nodeGraphics | GraphAttributes::edgeGraphics |
                    GraphAttributes::nodeLabel | GraphAttributes::edgeLabel |
-                   GraphAttributes::edgeStyle | GraphAttributes::nodeStyle);
+                   GraphAttributes::edgeStyle | GraphAttributes::edgeArrow |
+                   GraphAttributes::nodeStyle
+
+    );
+
+    graph_attribute.directed() = false;
 
     for (const auto& country : all_countries) {
         if (!node_to_country.contains(country.code.iso_3166_2)) {
@@ -116,18 +122,25 @@ int main(void) {
             graph_attribute.width(v) = 80.0;
             graph_attribute.height(v) = 40.0;
 
+            graph_attribute.shape(v) = Shape::RoundedRect;
+
             node_to_country[country.code.iso_3166_2] = v;
         }
     }
 
     for (const auto& country : all_countries) {
-        for (const auto& neighbour : country.neighbours) {
-            if (node_to_country.contains(country.code.iso_3166_2) &&
-                node_to_country.contains(neighbour.code.iso_3166_2)) {
-                edge e = graph.newEdge(node_to_country[country.code.iso_3166_2],
-                                       node_to_country[neighbour.code.iso_3166_2]);
+        auto sourceIt = node_to_country.find(country.code.iso_3166_2);
 
-                graph_attribute.strokeWidth(e) = 2.0;
+        if (sourceIt != node_to_country.end()) {
+            for (const auto& neighbour : country.neighbours) {
+                auto targetIt = node_to_country.find(neighbour.code.iso_3166_2);
+
+                if (targetIt != node_to_country.end()) {
+                    edge e = graph.newEdge(sourceIt->second, targetIt->second);
+
+                    graph_attribute.strokeWidth(e) = 2.0;
+                    graph_attribute.arrowType(e) = EdgeArrow::None;
+                }
             }
         }
     }
