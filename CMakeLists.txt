@@ -11,6 +11,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_subdirectory(lib)
 add_subdirectory(bin)
 
+include(FetchContent)
+FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git)
+FetchContent_MakeAvailable(cpr)
+
+include(FetchContent)
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
 option(BUILD_TESTS "Build tests" OFF)
 
 if(BUILD_TESTS)

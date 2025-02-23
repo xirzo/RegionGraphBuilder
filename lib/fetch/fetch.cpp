@@ -1,7 +1,7 @@
-#include "test.h"
+#include "fetch.h"
 
 #include <iostream>
 
-void PrintHelloWorld() {
+void fetch() {
     std::cout << "Hello, World!" << std::endl;
 }
