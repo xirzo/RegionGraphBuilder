@@ -1,8 +1,15 @@
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
+#include <ostream>
+#include <vector>
 
+#include "code_parser.h"
 #include "fetch.h"
+#include "json_reader.h"
+#include "json_writer.h"
+#include "neighbour_parser.h"
 
 int main(void) {
     const char* geo_data_source_api_key = std::getenv("geo_data_source_api_key");
@@ -12,24 +19,89 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    const auto codes_result = fetch::fetch_region_codes();
+    static constexpr std::string codes_file_name = "codes.json";
+
+    if (!std::filesystem::exists(codes_file_name)) {
+        const auto code_fetch_result = fetch::fetch_region_codes();
+
+        if (!code_fetch_result.has_value()) {
+            std::cerr << code_fetch_result.error() << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        auto code_write_result =
+            json_writer::write_to_file(code_fetch_result.value(), codes_file_name);
+
+        if (!code_write_result.has_value()) {
+            std::cerr << code_write_result.error() << std::endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    const auto codes_result = json_reader::read_file(codes_file_name);
 
     if (!codes_result.has_value()) {
         std::cerr << codes_result.error() << std::endl;
         return EXIT_FAILURE;
     }
 
-    std::cout << codes_result.value() << std::endl;
+    const auto code_parse_result = code_parser::parse(codes_result.value());
 
-    const auto neighboring_result =
-        fetch::fetch_neighboring_countries(geo_data_source_api_key, "ru");
-
-    if (!neighboring_result.has_value()) {
-        std::cerr << neighboring_result.error() << std::endl;
+    if (!code_parse_result.has_value()) {
+        std::cerr << code_parse_result.error() << std::endl;
         return EXIT_FAILURE;
     }
 
-    std::cout << neighboring_result.value() << std::endl;
+    std::vector<neighbour_parser::country> all_countries;
+
+    for (const auto& code : code_parse_result.value()) {
+        if (!std::filesystem::exists(code.iso_3166_2)) {
+            const auto neighboring_result = fetch::fetch_neighboring_countries(
+                geo_data_source_api_key, code.iso_3166_2);
+
+            if (!neighboring_result.has_value()) {
+                std::cerr << neighboring_result.error() << std::endl;
+                continue;
+            }
+
+            auto neighbour_write_result =
+                json_writer::write_to_file(neighboring_result.value(), code.iso_3166_2);
+
+            if (!neighbour_write_result.has_value()) {
+                std::cerr << neighbour_write_result.error() << std::endl;
+                continue;
+            }
+        }
+
+        const auto neighbour_read_result = json_reader::read_file(code.iso_3166_2);
+
+        if (!neighbour_read_result.has_value()) {
+            std::cerr << neighbour_read_result.error() << std::endl;
+            continue;
+        }
+
+        const auto neighbour_parse_result =
+            neighbour_parser::parse("name", code, neighbour_read_result.value());
+
+        if (!neighbour_parse_result.has_value()) {
+            std::cerr << neighbour_parse_result.error() << std::endl;
+            continue;
+        }
+
+        all_countries.push_back(neighbour_parse_result.value());
+    }
+
+    for (const auto& country : all_countries) {
+        std::cout << "==============================" << std::endl;
+        std::cout << "Code: " << country.code.iso_3166_2 << std::endl;
+        std::cout << "Neighbours: " << std::endl;
+
+        for (const auto& country : all_countries) {
+            std::cout << " - Code: " << country.code.iso_3166_2 << std::endl;
+        }
+
+        std::cout << "============================" << std::endl;
+    }
 
     return EXIT_SUCCESS;
 }
