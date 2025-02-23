@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <iostream>
 #include <ostream>
+#include <set>
 #include <vector>
 
 #include "code_parser.h"
@@ -21,6 +22,29 @@
 #include "neighbour_parser.h"
 
 using namespace ogdf;
+
+struct EdgePair {
+    std::string country1;
+    std::string country2;
+
+    EdgePair(const std::string& c1, const std::string& c2) {
+        if (c1 < c2) {
+            country1 = c1;
+            country2 = c2;
+        } else {
+            country1 = c2;
+            country2 = c1;
+        }
+    }
+
+    bool operator<(const EdgePair& other) const {
+        if (country1 != other.country1) {
+            return country1 < other.country1;
+        }
+
+        return country2 < other.country2;
+    }
+};
 
 int main(void) {
     const char* geo_data_source_api_key = std::getenv("geo_data_source_api_key");
@@ -128,6 +152,8 @@ int main(void) {
         }
     }
 
+    std::set<EdgePair> added_edges;
+
     for (const auto& country : all_countries) {
         auto sourceIt = node_to_country.find(country.code.iso_3166_2);
 
@@ -136,10 +162,14 @@ int main(void) {
                 auto targetIt = node_to_country.find(neighbour.code.iso_3166_2);
 
                 if (targetIt != node_to_country.end()) {
-                    edge e = graph.newEdge(sourceIt->second, targetIt->second);
+                    EdgePair edge_pair(country.code.iso_3166_2,
+                                       neighbour.code.iso_3166_2);
 
-                    graph_attribute.strokeWidth(e) = 2.0;
-                    graph_attribute.arrowType(e) = EdgeArrow::None;
+                    if (added_edges.insert(edge_pair).second) {
+                        edge e = graph.newEdge(sourceIt->second, targetIt->second);
+                        graph_attribute.strokeWidth(e) = 2.0;
+                        graph_attribute.arrowType(e) = EdgeArrow::None;
+                    }
                 }
             }
         }
@@ -151,9 +181,9 @@ int main(void) {
     sugiyama_layout.setCrossMin(new MedianHeuristic);
 
     OptimalHierarchyLayout* hierarchyLayout = new OptimalHierarchyLayout;
-    hierarchyLayout->layerDistance(1.0);
-    hierarchyLayout->nodeDistance(10.0);
-    hierarchyLayout->weightBalancing(0.1);
+    hierarchyLayout->layerDistance(5.0);
+    hierarchyLayout->nodeDistance(15.0);
+    hierarchyLayout->weightBalancing(0.8);
 
     sugiyama_layout.setLayout(hierarchyLayout);
 
