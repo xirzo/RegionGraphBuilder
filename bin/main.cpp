@@ -12,7 +12,24 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    fetch::fetch_neighboring_countries(geo_data_source_api_key, "ru");
+    const auto codes_result = fetch::fetch_region_codes();
+
+    if (!codes_result.has_value()) {
+        std::cerr << codes_result.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::cout << codes_result.value() << std::endl;
+
+    const auto neighboring_result =
+        fetch::fetch_neighboring_countries(geo_data_source_api_key, "ru");
+
+    if (!neighboring_result.has_value()) {
+        std::cerr << neighboring_result.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::cout << neighboring_result.value() << std::endl;
 
     return EXIT_SUCCESS;
 }
