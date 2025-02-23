@@ -1,18 +1,15 @@
 cmake_minimum_required(VERSION 3.30.5)
 
 project(
-  project_name
+  europe_graph_builder
   VERSION 1.0
-  DESCRIPTION "Project description"
+  DESCRIPTION "Program to build a graph of Europe. Each vertice is a country"
   LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(lib)
-
-add_executable(${PROJECT_NAME} ./bin/main.cpp)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE test)
+add_subdirectory(bin)
 
 option(BUILD_TESTS "Build tests" OFF)
 
