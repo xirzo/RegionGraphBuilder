@@ -105,12 +105,17 @@ int main(void) {
     Graph graph;
     GraphAttributes graph_attribute(
         graph, GraphAttributes::nodeGraphics | GraphAttributes::edgeGraphics |
-                   GraphAttributes::nodeLabel | GraphAttributes::edgeLabel);
+                   GraphAttributes::nodeLabel | GraphAttributes::edgeLabel |
+                   GraphAttributes::edgeStyle | GraphAttributes::nodeStyle);
 
     for (const auto& country : all_countries) {
         if (!node_to_country.contains(country.code.iso_3166_2)) {
             node v = graph.newNode();
             graph_attribute.label(v) = country.code.iso_3166_2;
+
+            graph_attribute.width(v) = 80.0;
+            graph_attribute.height(v) = 40.0;
+
             node_to_country[country.code.iso_3166_2] = v;
         }
     }
@@ -119,8 +124,10 @@ int main(void) {
         for (const auto& neighbour : country.neighbours) {
             if (node_to_country.contains(country.code.iso_3166_2) &&
                 node_to_country.contains(neighbour.code.iso_3166_2)) {
-                graph.newEdge(node_to_country[country.code.iso_3166_2],
-                              node_to_country[neighbour.code.iso_3166_2]);
+                edge e = graph.newEdge(node_to_country[country.code.iso_3166_2],
+                                       node_to_country[neighbour.code.iso_3166_2]);
+
+                graph_attribute.strokeWidth(e) = 2.0;
             }
         }
     }
@@ -129,7 +136,13 @@ int main(void) {
 
     sugiyama_layout.setRanking(new OptimalRanking);
     sugiyama_layout.setCrossMin(new MedianHeuristic);
-    sugiyama_layout.setLayout(new OptimalHierarchyLayout);
+
+    OptimalHierarchyLayout* hierarchyLayout = new OptimalHierarchyLayout;
+    hierarchyLayout->layerDistance(1.0);
+    hierarchyLayout->nodeDistance(10.0);
+    hierarchyLayout->weightBalancing(0.1);
+
+    sugiyama_layout.setLayout(hierarchyLayout);
 
     sugiyama_layout.call(graph_attribute);
 
