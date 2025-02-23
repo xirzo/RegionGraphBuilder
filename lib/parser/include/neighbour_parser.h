@@ -10,16 +10,13 @@
 namespace neighbour_parser {
 
 struct country {
-    const std::string name;
     const code_parser::country_code code;
-    std::vector<country> neighbours;
+    std::vector<code_parser::country_code> neighbours;
 
-    country(std::string country_name, code_parser::country_code country_code)
-        : name(std::move(country_name)), code(std::move(country_code)) {}
+    country(code_parser::country_code country_code) : code(std::move(country_code)) {}
 };
 
-std::expected<country, std::string> parse(const std::string& country_name,
-                                          const code_parser::country_code& country_code,
+std::expected<country, std::string> parse(const code_parser::country_code& country_code,
                                           const std::string& json);
 }  // namespace neighbour_parser
 

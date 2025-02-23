@@ -1,4 +1,4 @@
-add_library(parser ./src/code_parser.cpp ./src/neighbour_parser.cpp)
+add_library(parser ./src/code_parser.cpp ./src/neighbour_parser.cpp ./src/name_parser.cpp)
 
 add_library(parser_headers INTERFACE)
 target_include_directories(parser_headers INTERFACE

@@ -9,6 +9,17 @@ using namespace cpr;
 
 namespace fetch {
 
+std::expected<std::string, std::string> fetch_country(const std::string& iso_code) {
+    Response response = Get(Url{"https://restcountries.com/v3.1/alpha/" + iso_code});
+
+    if (response.status_code != 200) {
+        return std::unexpected("Error: fetch country failed with code " +
+                               std::to_string(response.status_code));
+    }
+
+    return response.text;
+}
+
 std::expected<std::string, std::string> fetch_region_codes(const std::string& region) {
     Response response = Get(Url{"https://restcountries.com/v3.1/region/" + region});
 

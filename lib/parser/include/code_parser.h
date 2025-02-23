@@ -11,7 +11,7 @@ struct country_code {
     const std::string iso_3166_2;
 };
 
-std::expected<std::vector<country_code>, std::string> parse(const std::string& json);
+std::expected<std::vector<country_code>, std::string> parse(const std::string& text);
 
 }  // namespace code_parser
 

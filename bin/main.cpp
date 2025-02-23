@@ -13,21 +13,28 @@
 #include <iostream>
 #include <ostream>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include "code_parser.h"
 #include "fetch.h"
 #include "json_reader.h"
 #include "json_writer.h"
+#include "name_parser.h"
 #include "neighbour_parser.h"
 
 using namespace ogdf;
 
-struct EdgePair {
+struct named_country {
+    std::string name;
+    std::vector<std::string> neighbours;
+};
+
+struct edge_pair {
     std::string country1;
     std::string country2;
 
-    EdgePair(const std::string& c1, const std::string& c2) {
+    edge_pair(const std::string& c1, const std::string& c2) {
         if (c1 < c2) {
             country1 = c1;
             country2 = c2;
@@ -37,7 +44,7 @@ struct EdgePair {
         }
     }
 
-    bool operator<(const EdgePair& other) const {
+    bool operator<(const edge_pair& other) const {
         if (country1 != other.country1) {
             return country1 < other.country1;
         }
@@ -116,7 +123,7 @@ int main(void) {
         }
 
         const auto neighbour_parse_result =
-            neighbour_parser::parse("name", code, neighbour_read_result.value());
+            neighbour_parser::parse(code, neighbour_read_result.value());
 
         if (!neighbour_parse_result.has_value()) {
             std::cerr << neighbour_parse_result.error() << std::endl;
@@ -124,6 +131,39 @@ int main(void) {
         }
 
         all_countries.push_back(neighbour_parse_result.value());
+    }
+
+    std::unordered_map<std::string, std::string> code_to_country_name;
+
+    for (const auto& country : all_countries) {
+        auto fetch_country_result = fetch::fetch_country(country.code.iso_3166_2);
+
+        if (!fetch_country_result) {
+            std::cerr << fetch_country_result.error() << std::endl;
+            continue;
+        }
+
+        auto parse_name_result = name_parser::parse(fetch_country_result.value());
+
+        if (!parse_name_result) {
+            std::cerr << parse_name_result.error() << std::endl;
+            continue;
+        }
+
+        code_to_country_name[country.code.iso_3166_2] = parse_name_result.value();
+    }
+
+    std::vector<named_country> countries;
+
+    for (const auto& country : all_countries) {
+        named_country c;
+        c.name = code_to_country_name[country.code.iso_3166_2];
+
+        for (const auto& neighbour : country.neighbours) {
+            c.neighbours.emplace_back(code_to_country_name[neighbour.iso_3166_2]);
+        }
+
+        countries.push_back(c);
     }
 
     std::unordered_map<std::string, node> node_to_country;
@@ -138,35 +178,34 @@ int main(void) {
 
     graph_attribute.directed() = false;
 
-    for (const auto& country : all_countries) {
-        if (!node_to_country.contains(country.code.iso_3166_2)) {
+    for (const auto& country : countries) {
+        if (!node_to_country.contains(country.name)) {
             node v = graph.newNode();
-            graph_attribute.label(v) = country.code.iso_3166_2;
+            graph_attribute.label(v) = country.name;
 
             graph_attribute.width(v) = 80.0;
             graph_attribute.height(v) = 40.0;
 
             graph_attribute.shape(v) = Shape::RoundedRect;
 
-            node_to_country[country.code.iso_3166_2] = v;
+            node_to_country[country.name] = v;
         }
     }
 
-    std::set<EdgePair> added_edges;
+    std::set<edge_pair> added_edges;
 
-    for (const auto& country : all_countries) {
-        auto sourceIt = node_to_country.find(country.code.iso_3166_2);
+    for (const auto& country : countries) {
+        auto source_it = node_to_country.find(country.name);
 
-        if (sourceIt != node_to_country.end()) {
+        if (source_it != node_to_country.end()) {
             for (const auto& neighbour : country.neighbours) {
-                auto targetIt = node_to_country.find(neighbour.code.iso_3166_2);
+                auto target_it = node_to_country.find(neighbour);
 
-                if (targetIt != node_to_country.end()) {
-                    EdgePair edge_pair(country.code.iso_3166_2,
-                                       neighbour.code.iso_3166_2);
+                if (target_it != node_to_country.end()) {
+                    edge_pair edge_pair(country.name, neighbour);
 
                     if (added_edges.insert(edge_pair).second) {
-                        edge e = graph.newEdge(sourceIt->second, targetIt->second);
+                        edge e = graph.newEdge(source_it->second, target_it->second);
                         graph_attribute.strokeWidth(e) = 2.0;
                         graph_attribute.arrowType(e) = EdgeArrow::None;
                     }

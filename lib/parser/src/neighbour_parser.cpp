@@ -11,10 +11,9 @@ using nlohmann::json;
 
 namespace neighbour_parser {
 
-std::expected<country, std::string> parse(const std::string& country_name,
-                                          const code_parser::country_code& country_code,
+std::expected<country, std::string> parse(const code_parser::country_code& country_code,
                                           const std::string& json) {
-    struct country country{country_name, country_code};
+    struct country country{country_code};
 
     nlohmann::json neighbours = json::parse(json);
 
@@ -29,11 +28,8 @@ std::expected<country, std::string> parse(const std::string& country_name,
                 "Error: provided json`s countries do not contain country_name value");
         }
 
-        struct country neighbour_country(
-            neighbour["country_name"].get<std::string>(),
+        country.neighbours.emplace_back(
             code_parser::country_code(neighbour["country_code"].get<std::string>()));
-
-        country.neighbours.emplace_back(neighbour_country);
     }
 
     return country;
