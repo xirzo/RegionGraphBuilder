@@ -1,3 +1,11 @@
+#include <ogdf/basic/Graph.h>
+#include <ogdf/basic/GraphAttributes.h>
+#include <ogdf/fileformats/GraphIO.h>
+#include <ogdf/layered/MedianHeuristic.h>
+#include <ogdf/layered/OptimalHierarchyLayout.h>
+#include <ogdf/layered/OptimalRanking.h>
+#include <ogdf/layered/SugiyamaLayout.h>
+
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -10,6 +18,8 @@
 #include "json_reader.h"
 #include "json_writer.h"
 #include "neighbour_parser.h"
+
+using namespace ogdf;
 
 int main(void) {
     const char* geo_data_source_api_key = std::getenv("geo_data_source_api_key");
@@ -91,17 +101,41 @@ int main(void) {
         all_countries.push_back(neighbour_parse_result.value());
     }
 
+    std::unordered_map<std::string, node> node_to_country;
+    Graph graph;
+    GraphAttributes graph_attribute(
+        graph, GraphAttributes::nodeGraphics | GraphAttributes::edgeGraphics |
+                   GraphAttributes::nodeLabel | GraphAttributes::edgeLabel);
+
     for (const auto& country : all_countries) {
-        std::cout << "==============================" << std::endl;
-        std::cout << "Code: " << country.code.iso_3166_2 << std::endl;
-        std::cout << "Neighbours: " << std::endl;
-
-        for (const auto& country : all_countries) {
-            std::cout << " - Code: " << country.code.iso_3166_2 << std::endl;
+        if (!node_to_country.contains(country.code.iso_3166_2)) {
+            node v = graph.newNode();
+            graph_attribute.label(v) = country.code.iso_3166_2;
+            node_to_country[country.code.iso_3166_2] = v;
         }
-
-        std::cout << "============================" << std::endl;
     }
+
+    for (const auto& country : all_countries) {
+        for (const auto& neighbour : country.neighbours) {
+            if (node_to_country.contains(country.code.iso_3166_2) &&
+                node_to_country.contains(neighbour.code.iso_3166_2)) {
+                graph.newEdge(node_to_country[country.code.iso_3166_2],
+                              node_to_country[neighbour.code.iso_3166_2]);
+            }
+        }
+    }
+
+    SugiyamaLayout sugiyama_layout;
+
+    sugiyama_layout.setRanking(new OptimalRanking);
+    sugiyama_layout.setCrossMin(new MedianHeuristic);
+    sugiyama_layout.setLayout(new OptimalHierarchyLayout);
+
+    sugiyama_layout.call(graph_attribute);
+
+    GraphIO::write(graph_attribute, "graph.svg", GraphIO::drawSVG);
+
+    std::cout << "Graph has been created and saved as 'graph.svg'" << std::endl;
 
     return EXIT_SUCCESS;
 }
