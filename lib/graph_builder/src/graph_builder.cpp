@@ -2,6 +2,7 @@
 
 #include <ogdf/basic/Graph.h>
 #include <ogdf/basic/GraphAttributes.h>
+#include <ogdf/basic/Graph_d.h>
 #include <ogdf/basic/graphics.h>
 #include <ogdf/fileformats/GraphIO.h>
 #include <ogdf/layered/MedianHeuristic.h>
@@ -20,10 +21,10 @@
 #include "fetch.h"
 #include "json_reader.h"
 #include "json_writer.h"
+#include "metrics.h"
 #include "name_parser.h"
 #include "neighbour_parser.h"
 #include "nlohmann/json.hpp"
-#include "nlohmann/json_fwd.hpp"
 
 using namespace ogdf;
 
@@ -237,6 +238,11 @@ bool graph_builder::build() {
 
     GraphIO::write(graph_attribute, region_to_search_in_ + "graph.svg", GraphIO::drawSVG);
 
-    std::cout << "Graph has been created and saved" << std::endl;
+    graph_metrics metrics;
+
+    auto m = metrics.calculate_metrics(graph, graph_attribute);
+
+    metrics.printMetrics(m);
+
     return EXIT_SUCCESS;
 }

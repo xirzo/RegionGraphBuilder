@@ -13,8 +13,6 @@ target_include_directories(graph_builder
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-find_package(OGDF REQUIRED)
-
 target_link_libraries(graph_builder
     PRIVATE
         fetch
@@ -24,6 +22,7 @@ target_link_libraries(graph_builder
         OGDF
         COIN
         nlohmann_json::nlohmann_json
+        metrics
     PUBLIC
         graph_builder_headers
 )
