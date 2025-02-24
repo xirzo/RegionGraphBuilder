@@ -190,8 +190,8 @@ bool graph_builder::build() {
             node v = graph.newNode();
             graph_attribute.label(v) = country.name;
 
-            graph_attribute.width(v) = 80.0;
-            graph_attribute.height(v) = 40.0;
+            graph_attribute.width(v) = 120.0;
+            graph_attribute.height(v) = 80.0;
 
             graph_attribute.shape(v) = Shape::RoundedRect;
 
