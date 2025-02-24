@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_subdirectory(lib)
 add_subdirectory(bin)
 
+
 include(FetchContent)
 FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git)
 FetchContent_MakeAvailable(cpr)
