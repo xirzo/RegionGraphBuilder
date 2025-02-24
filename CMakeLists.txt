@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 3.30.5)
 
 project(
-  europe_graph_builder
+  region_graph_builder
   VERSION 1.0
-  DESCRIPTION "Program to build a graph of Europe. Each vertice is a country"
+  DESCRIPTION "Program to build a graph of some region. Each vertice is a country"
   LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(lib)
 add_subdirectory(bin)
-
 
 include(FetchContent)
 FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git)
