@@ -53,7 +53,13 @@ struct edge_pair {
     }
 };
 
-int main(void) {
+int main(int argc, char** argv) {
+    std::string region_to_search = "europe";
+
+    if (argc == 2) {
+        region_to_search = argv[1];
+    }
+
     const char* geo_data_source_api_key = std::getenv("geo_data_source_api_key");
 
     if (geo_data_source_api_key == nullptr || strlen(geo_data_source_api_key) == 0) {
@@ -61,10 +67,10 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    static constexpr std::string codes_file_name = "codes.json";
+    const std::string codes_file_name = region_to_search + "codes.json";
 
     if (!std::filesystem::exists(codes_file_name)) {
-        const auto code_fetch_result = fetch::fetch_region_codes();
+        const auto code_fetch_result = fetch::fetch_region_codes(region_to_search);
 
         if (!code_fetch_result.has_value()) {
             std::cerr << code_fetch_result.error() << std::endl;
@@ -228,9 +234,9 @@ int main(void) {
 
     sugiyama_layout.call(graph_attribute);
 
-    GraphIO::write(graph_attribute, "graph.svg", GraphIO::drawSVG);
+    GraphIO::write(graph_attribute, region_to_search + "graph.svg", GraphIO::drawSVG);
 
-    std::cout << "Graph has been created and saved as 'graph.svg'" << std::endl;
+    std::cout << "Graph has been created and saved" << std::endl;
 
     return EXIT_SUCCESS;
 }
