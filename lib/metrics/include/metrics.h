@@ -13,6 +13,14 @@ public:
         size_t size;
     };
 
+    struct subgraph_info {
+        std::vector<ogdf::node> nodes;
+        std::vector<std::string> nodeLabels;
+        size_t size;
+        bool isEulerian;
+        bool isHamiltonian;
+    };
+
     struct metrics_result {
         int radius;
         int diameter;
@@ -28,9 +36,11 @@ public:
         int numComponents;
         int chromaticNumber;
         std::vector<ogdf::node> largestClique;
-        std::vector<std::string> largestCliqueLabels;  // Added labels for clique nodes
+        std::vector<std::string> largestCliqueLabels;
         size_t largestCliqueSize;
         size_t largestComponentSize;
+        subgraph_info largestEulerianSubgraph;
+        subgraph_info largestHamiltonianSubgraph;
     };
 
     static metrics_result calculate_metrics(const ogdf::Graph& G,
@@ -50,9 +60,27 @@ private:
     static std::vector<ogdf::node> findLargestClique(
         const ogdf::Graph& G, const std::vector<ogdf::node>& component);
     static bool isClique(const ogdf::Graph& G, const std::vector<ogdf::node>& nodes);
-    static std::vector<ogdf::node> bronKerboschWithPivot(
-        const ogdf::Graph& G, std::vector<ogdf::node>& R, std::vector<ogdf::node>& P,
-        std::vector<ogdf::node>& X);  // ... (rest of the header remains the same)
+    static std::vector<ogdf::node> bronKerboschWithPivot(const ogdf::Graph& G,
+                                                         std::vector<ogdf::node>& R,
+                                                         std::vector<ogdf::node>& P,
+                                                         std::vector<ogdf::node>& X);
+    static bool isConnected(const ogdf::Graph& G, const std::vector<ogdf::node>& nodes);
+    static bool hasEvenDegrees(const ogdf::Graph& G,
+                               const std::vector<ogdf::node>& nodes);
+    static bool isEulerian(const ogdf::Graph& G, const std::vector<ogdf::node>& nodes);
+    static bool isHamiltonian(const ogdf::Graph& G, const std::vector<ogdf::node>& nodes);
+    static subgraph_info findLargestEulerianSubgraph(
+        const ogdf::Graph& G, const ogdf::GraphAttributes& GA,
+        const std::vector<ogdf::node>& component);
+    static subgraph_info findLargestHamiltonianSubgraph(
+        const ogdf::Graph& G, const ogdf::GraphAttributes& GA,
+        const std::vector<ogdf::node>& component);
+    static bool hamiltonianCycle(const ogdf::Graph& G,
+                                 const std::vector<ogdf::node>& nodes,
+                                 std::vector<ogdf::node>& path,
+                                 std::vector<bool>& visited, ogdf::node current,
+                                 int count);
+    static bool areNodesAdjacent(const ogdf::Graph& G, ogdf::node u, ogdf::node v);
 };
 
 #endif  // !METRICS_H

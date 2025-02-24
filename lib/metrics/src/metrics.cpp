@@ -2,8 +2,6 @@
 
 #include <algorithm>
 #include <ctime>
-#include <iostream>
-#include <limits>
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
@@ -216,6 +214,285 @@ int graph_metrics::calculateChromaticNumber(const ogdf::Graph& G,
     return max_color + 1;
 }
 
+bool graph_metrics::isConnected(const ogdf::Graph& G,
+                                const std::vector<ogdf::node>& nodes) {
+    if (nodes.empty()) return true;
+
+    std::unordered_map<ogdf::node, bool> visited;
+    for (const auto& node : nodes) {
+        visited[node] = false;
+    }
+
+    std::queue<ogdf::node> q;
+    q.push(nodes[0]);
+    visited[nodes[0]] = true;
+    int visitedCount = 1;
+
+    while (!q.empty()) {
+        ogdf::node current = q.front();
+        q.pop();
+
+        for (ogdf::adjEntry adj : current->adjEntries) {
+            ogdf::node neighbor = adj->twinNode();
+            if (std::find(nodes.begin(), nodes.end(), neighbor) != nodes.end() &&
+                !visited[neighbor]) {
+                visited[neighbor] = true;
+                q.push(neighbor);
+                visitedCount++;
+            }
+        }
+    }
+
+    return visitedCount == nodes.size();
+}
+
+bool graph_metrics::hasEvenDegrees(const ogdf::Graph& G,
+                                   const std::vector<ogdf::node>& nodes) {
+    std::unordered_set<ogdf::node> nodeSet(nodes.begin(), nodes.end());
+
+    for (const auto& node : nodes) {
+        int degree = 0;
+        for (ogdf::adjEntry adj : node->adjEntries) {
+            if (nodeSet.find(adj->twinNode()) != nodeSet.end()) {
+                degree++;
+            }
+        }
+        if (degree % 2 != 0) return false;
+    }
+    return true;
+}
+
+bool graph_metrics::isEulerian(const ogdf::Graph& G,
+                               const std::vector<ogdf::node>& nodes) {
+    return isConnected(G, nodes) && hasEvenDegrees(G, nodes);
+}
+
+bool graph_metrics::areNodesAdjacent(const ogdf::Graph& G, ogdf::node u, ogdf::node v) {
+    for (ogdf::adjEntry adj : u->adjEntries) {
+        if (adj->twinNode() == v) return true;
+    }
+    return false;
+}
+
+bool graph_metrics::hamiltonianCycle(const ogdf::Graph& G,
+                                     const std::vector<ogdf::node>& nodes,
+                                     std::vector<ogdf::node>& path,
+                                     std::vector<bool>& visited, ogdf::node current,
+                                     int count) {
+    if (count == nodes.size()) {
+        return areNodesAdjacent(G, current, path[0]);
+    }
+
+    for (const auto& next : nodes) {
+        if (!visited[&next - &nodes[0]] && areNodesAdjacent(G, current, next)) {
+            path[count] = next;
+            visited[&next - &nodes[0]] = true;
+
+            if (hamiltonianCycle(G, nodes, path, visited, next, count + 1)) {
+                return true;
+            }
+
+            visited[&next - &nodes[0]] = false;
+        }
+    }
+    return false;
+}
+
+bool graph_metrics::isHamiltonian(const ogdf::Graph& G,
+                                  const std::vector<ogdf::node>& nodes) {
+    if (nodes.size() < 3) return false;
+
+    std::vector<ogdf::node> path(nodes.size());
+    std::vector<bool> visited(nodes.size(), false);
+
+    path[0] = nodes[0];
+    visited[0] = true;
+
+    return hamiltonianCycle(G, nodes, path, visited, nodes[0], 1);
+}
+
+graph_metrics::subgraph_info graph_metrics::findLargestEulerianSubgraph(
+    const ogdf::Graph& G, const ogdf::GraphAttributes& GA,
+    const std::vector<ogdf::node>& component) {
+    subgraph_info result;
+    size_t n = component.size();
+
+    if (n < 3) {
+        return result;
+    }
+
+    std::vector<std::vector<bool>> adj(n, std::vector<bool>(n, false));
+    std::vector<int> degrees(n, 0);
+
+    for (size_t i = 0; i < n; ++i) {
+        for (ogdf::adjEntry adjE : component[i]->adjEntries) {
+            auto it = std::find(component.begin(), component.end(), adjE->twinNode());
+
+            if (it != component.end()) {
+                size_t j = it - component.begin();
+                if (!adj[i][j]) {
+                    adj[i][j] = adj[j][i] = true;
+                    degrees[i]++;
+                    degrees[j]++;
+                }
+            }
+        }
+    }
+
+    std::vector<size_t> candidates;
+
+    for (size_t i = 0; i < n; ++i) {
+        if (degrees[i] % 2 == 0 && degrees[i] >= 2) {
+            candidates.push_back(i);
+        }
+    }
+
+    std::sort(candidates.begin(), candidates.end(),
+              [&degrees](size_t a, size_t b) { return degrees[a] > degrees[b]; });
+
+    for (size_t start : candidates) {
+        std::vector<bool> used(n, false);
+        std::vector<size_t> current;
+        std::vector<int> currentDegrees(n, 0);
+
+        used[start] = true;
+        current.push_back(start);
+
+        bool changed;
+
+        do {
+            changed = false;
+            for (size_t i = 0; i < n; ++i) {
+                if (used[i]) continue;
+
+                int connections = 0;
+
+                for (size_t j : current) {
+                    if (adj[i][j]) connections++;
+                }
+
+                if (connections >= 2 && connections % 2 == 0) {
+                    used[i] = true;
+                    current.push_back(i);
+                    changed = true;
+                }
+            }
+        } while (changed);
+
+        std::vector<ogdf::node> currentNodes;
+
+        currentNodes.reserve(current.size());
+        for (size_t idx : current) {
+            currentNodes.push_back(component[idx]);
+        }
+
+        if (currentNodes.size() > result.size && isConnected(G, currentNodes)) {
+            result.nodes = std::move(currentNodes);
+            result.nodeLabels.clear();
+            result.nodeLabels.reserve(current.size());
+
+            for (size_t idx : current) {
+                result.nodeLabels.push_back(GA.label(component[idx]).c_str());
+            }
+            result.size = current.size();
+            result.isEulerian = true;
+
+            if (result.size >= n - 1) {
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+graph_metrics::subgraph_info graph_metrics::findLargestHamiltonianSubgraph(
+    const ogdf::Graph& G, const ogdf::GraphAttributes& GA,
+    const std::vector<ogdf::node>& component) {
+    subgraph_info result;
+    size_t n = component.size();
+
+    if (n < 3) {
+        return result;
+    }
+
+    std::vector<std::vector<bool>> adj(n, std::vector<bool>(n, false));
+    std::vector<int> degrees(n, 0);
+
+    for (size_t i = 0; i < n; ++i) {
+        for (ogdf::adjEntry adjE : component[i]->adjEntries) {
+            auto it = std::find(component.begin(), component.end(), adjE->twinNode());
+            if (it != component.end()) {
+                size_t j = it - component.begin();
+                if (!adj[i][j]) {
+                    adj[i][j] = adj[j][i] = true;
+                    degrees[i]++;
+                    degrees[j]++;
+                }
+            }
+        }
+    }
+
+    std::vector<size_t> highDegNodes;
+
+    for (size_t i = 0; i < n; ++i) {
+        if (degrees[i] >= n / 2) {
+            highDegNodes.push_back(i);
+        }
+    }
+
+    std::sort(highDegNodes.begin(), highDegNodes.end(),
+              [&degrees](size_t a, size_t b) { return degrees[a] > degrees[b]; });
+
+    for (size_t start : highDegNodes) {
+        std::vector<size_t> current;
+        std::vector<bool> used(n, false);
+        current.push_back(start);
+        used[start] = true;
+
+        for (size_t i = 0; i < n; ++i) {
+            if (i == start || used[i]) continue;
+
+            int connections = 0;
+
+            for (const size_t j : current) {
+                if (adj[i][j]) connections++;
+            }
+
+            if (connections >= current.size() / 2) {
+                current.push_back(i);
+                used[i] = true;
+            }
+        }
+
+        if (current.size() > result.size) {
+            std::vector<ogdf::node> currentNodes;
+            currentNodes.reserve(current.size());
+            for (size_t idx : current) {
+                currentNodes.push_back(component[idx]);
+            }
+
+            if (isHamiltonian(G, currentNodes)) {
+                result.nodes = std::move(currentNodes);
+                result.size = current.size();
+                result.isHamiltonian = true;
+
+                result.nodeLabels.clear();
+                result.nodeLabels.reserve(current.size());
+                for (size_t idx : current) {
+                    result.nodeLabels.push_back(GA.label(component[idx]).c_str());
+                }
+
+                if (result.size >= n - 1) {
+                    break;
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
 graph_metrics::metrics_result graph_metrics::calculate_metrics(
     const ogdf::Graph& G, const ogdf::GraphAttributes& GA) {
     metrics_result result;
@@ -240,6 +517,11 @@ graph_metrics::metrics_result graph_metrics::calculate_metrics(
         for (const auto& node : result.largestClique) {
             result.largestCliqueLabels.push_back(GA.label(node).c_str());
         }
+
+        result.largestEulerianSubgraph =
+            findLargestEulerianSubgraph(G, GA, components[0].nodes);
+        result.largestHamiltonianSubgraph =
+            findLargestHamiltonianSubgraph(G, GA, components[0].nodes);
     }
 
     for (ogdf::node v : G.nodes) {
@@ -269,7 +551,7 @@ graph_metrics::metrics_result graph_metrics::calculate_metrics(
 
 void graph_metrics::printMetrics(const metrics_result& metrics) {
     std::cout << "\n=== Graph Metrics Report ===" << std::endl;
-    std::cout << "Generated on: 2025-02-24 09:40:09 UTC" << std::endl;
+    std::cout << "Generated on: 2025-02-24 09:59:29 UTC" << std::endl;
     std::cout << "Generated by: xirzo" << std::endl;
 
     std::cout << "\nBasic Graph Properties:" << std::endl;
@@ -282,10 +564,29 @@ void graph_metrics::printMetrics(const metrics_result& metrics) {
     std::cout << "- Size: " << metrics.largestComponentSize << std::endl;
     std::cout << "- Chromatic number: " << metrics.chromaticNumber << std::endl;
     std::cout << "- Largest clique size: " << metrics.largestCliqueSize << std::endl;
-
     if (!metrics.largestCliqueLabels.empty()) {
         std::cout << "- Largest clique countries:" << std::endl;
         for (const auto& label : metrics.largestCliqueLabels) {
+            std::cout << "  * " << label << std::endl;
+        }
+    }
+
+    std::cout << "\nEulerian Properties:" << std::endl;
+    std::cout << "- Largest Eulerian subgraph size: "
+              << metrics.largestEulerianSubgraph.size << std::endl;
+    if (!metrics.largestEulerianSubgraph.nodeLabels.empty()) {
+        std::cout << "- Countries in largest Eulerian subgraph:" << std::endl;
+        for (const auto& label : metrics.largestEulerianSubgraph.nodeLabels) {
+            std::cout << "  * " << label << std::endl;
+        }
+    }
+
+    std::cout << "\nHamiltonian Properties:" << std::endl;
+    std::cout << "- Largest Hamiltonian subgraph size: "
+              << metrics.largestHamiltonianSubgraph.size << std::endl;
+    if (!metrics.largestHamiltonianSubgraph.nodeLabels.empty()) {
+        std::cout << "- Countries in largest Hamiltonian subgraph:" << std::endl;
+        for (const auto& label : metrics.largestHamiltonianSubgraph.nodeLabels) {
             std::cout << "  * " << label << std::endl;
         }
     }
@@ -304,5 +605,6 @@ void graph_metrics::printMetrics(const metrics_result& metrics) {
     for (const auto& label : metrics.centerLabels) {
         std::cout << "- " << label << std::endl;
     }
+
     std::cout << "=========================" << std::endl;
 }
