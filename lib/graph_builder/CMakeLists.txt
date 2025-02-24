@@ -23,6 +23,7 @@ target_link_libraries(graph_builder
         json_reader
         OGDF
         COIN
+        nlohmann_json::nlohmann_json
     PUBLIC
         graph_builder_headers
 )

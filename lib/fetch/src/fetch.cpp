@@ -40,8 +40,9 @@ std::expected<std::string, std::string> fetch_neighboring_countries(
                                        {"format", format}});
 
     if (response.status_code != 200) {
-        return std::unexpected("Error: fetch neighboring countries failed with code " +
-                               std::to_string(response.status_code));
+        return std::unexpected(
+            "Error: fetch neighboring countries failed with iso code " +
+            country_iso3166_2_code);
     }
 
     return response.text;

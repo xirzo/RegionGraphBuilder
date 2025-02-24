@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <iostream>
 #include <set>
+#include <string>
 #include <unordered_map>
 
 #include "code_parser.h"
@@ -21,6 +22,8 @@
 #include "json_writer.h"
 #include "name_parser.h"
 #include "neighbour_parser.h"
+#include "nlohmann/json.hpp"
+#include "nlohmann/json_fwd.hpp"
 
 using namespace ogdf;
 
@@ -95,34 +98,76 @@ bool graph_builder::build() {
         all_countries.push_back(neighbour_parse_result.value());
     }
 
-    std::unordered_map<std::string, std::string> code_to_country_name;
+    const string code_to_country_name_filename =
+        region_to_search_in_ + "code_to_country_name.json";
 
-    for (const auto& country : all_countries) {
-        auto fetch_country_result = fetch::fetch_country(country.code.iso_3166_2);
+    nlohmann::json ctcn;
 
-        if (!fetch_country_result) {
-            std::cerr << fetch_country_result.error() << std::endl;
-            continue;
+    if (!std::filesystem::exists(code_to_country_name_filename)) {
+        for (const auto& country : all_countries) {
+            auto fetch_country_result = fetch::fetch_country(country.code.iso_3166_2);
+
+            if (!fetch_country_result) {
+                std::cerr << fetch_country_result.error() << std::endl;
+                continue;
+            }
+
+            auto parse_name_result = name_parser::parse(fetch_country_result.value());
+
+            if (!parse_name_result) {
+                std::cerr << parse_name_result.error() << std::endl;
+                continue;
+            }
+
+            ctcn[country.code.iso_3166_2] = parse_name_result.value();
         }
 
-        auto parse_name_result = name_parser::parse(fetch_country_result.value());
+        auto ctcn_write_result =
+            json_writer::write_json_to_file(ctcn, code_to_country_name_filename);
 
-        if (!parse_name_result) {
-            std::cerr << parse_name_result.error() << std::endl;
-            continue;
+        if (!ctcn_write_result) {
+            std::cerr << ctcn_write_result.error() << std::endl;
+            return EXIT_FAILURE;
         }
-
-        code_to_country_name[country.code.iso_3166_2] = parse_name_result.value();
     }
+
+    auto ctcn_read_result = json_reader::read_file(code_to_country_name_filename);
+
+    if (!ctcn_read_result) {
+        std::cerr << ctcn_read_result.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    nlohmann::json code_to_country_name = nlohmann::json::parse(ctcn_read_result.value());
 
     std::vector<named_country> countries;
 
     for (const auto& country : all_countries) {
         named_country c;
-        c.name = code_to_country_name[country.code.iso_3166_2];
+
+        if (code_to_country_name.find(country.code.iso_3166_2) ==
+            code_to_country_name.end()) {
+            continue;
+        }
+
+        if (code_to_country_name[country.code.iso_3166_2].is_null()) {
+            continue;
+        }
+
+        c.name = code_to_country_name[country.code.iso_3166_2].get<std::string>();
 
         for (const auto& neighbour : country.neighbours) {
-            c.neighbours.emplace_back(code_to_country_name[neighbour.iso_3166_2]);
+            if (code_to_country_name.find(neighbour.iso_3166_2) ==
+                code_to_country_name.end()) {
+                continue;
+            }
+
+            if (code_to_country_name[neighbour.iso_3166_2].is_null()) {
+                continue;
+            }
+
+            c.neighbours.emplace_back(
+                code_to_country_name[neighbour.iso_3166_2].get<std::string>());
         }
 
         countries.push_back(c);
