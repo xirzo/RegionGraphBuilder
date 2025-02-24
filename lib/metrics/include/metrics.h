@@ -19,16 +19,20 @@ public:
         std::string minDegreeNodeLabel;
         size_t numVertices;
         size_t numEdges;
+        int cyclomaticNumber;
+        int numComponents;
     };
 
     static metrics_result calculate_metrics(const ogdf::Graph& G,
-                                            const ogdf::GraphAttributes& GA);
+                                         const ogdf::GraphAttributes& GA);
 
     static void printMetrics(const metrics_result& metrics);
 
 private:
     static int calculateEccentricity(const ogdf::Graph& G, ogdf::node v);
     static std::vector<int> bfs(const ogdf::Graph& G, ogdf::node start);
+    static int countComponents(const ogdf::Graph& G);  // Changed to count components
+    static void dfsComponent(const ogdf::Graph& G, ogdf::node v, std::vector<bool>& visited);
 };
 
 #endif  // !METRICS_H
