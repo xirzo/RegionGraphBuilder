@@ -9,6 +9,7 @@
 #include <ogdf/layered/OptimalHierarchyLayout.h>
 #include <ogdf/layered/OptimalRanking.h>
 #include <ogdf/layered/SugiyamaLayout.h>
+#include <ogdf/planarity/PlanarizationLayout.h>
 
 #include <cstdlib>
 #include <filesystem>
@@ -222,19 +223,9 @@ bool graph_builder::build() {
         }
     }
 
-    SugiyamaLayout sugiyama_layout;
+    PlanarizationLayout planar_layout;
 
-    sugiyama_layout.setRanking(new OptimalRanking);
-    sugiyama_layout.setCrossMin(new MedianHeuristic);
-
-    OptimalHierarchyLayout* hierarchyLayout = new OptimalHierarchyLayout;
-    hierarchyLayout->layerDistance(5.0);
-    hierarchyLayout->nodeDistance(15.0);
-    hierarchyLayout->weightBalancing(0.8);
-
-    sugiyama_layout.setLayout(hierarchyLayout);
-
-    sugiyama_layout.call(graph_attribute);
+    planar_layout.call(graph_attribute);
 
     GraphIO::write(graph_attribute, region_to_search_in_ + "graph.svg", GraphIO::drawSVG);
 
