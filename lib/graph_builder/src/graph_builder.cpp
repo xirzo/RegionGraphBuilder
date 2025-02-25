@@ -223,11 +223,12 @@ bool graph_builder::build() {
 
     GraphIO::write(graph_attribute, region_to_search_in_ + "graph.svg", GraphIO::drawSVG);
 
-    graph_metrics metrics;
+    graph_metrics_calculator calculator;
 
-    graph_metrics::metrics_result m = metrics.calculate_metrics(graph, graph_attribute);
+    graph_metrics_calculator::metrics metrics =
+        calculator.calculate_metrics(graph, graph_attribute);
 
-    metrics.printMetrics(m);
+    calculator.print_metrics(metrics);
 
     return EXIT_SUCCESS;
 }
