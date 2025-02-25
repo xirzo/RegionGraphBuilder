@@ -53,7 +53,7 @@ cmake --build .
 
 ```bash
 # Set your API key for the geodata source
-export geo_data_source_api_key="your_api_key_here"
+export geo_data_api_key="your_api_key_here"
 
 # Run with default region (europe)
 ./region_graph_builder
