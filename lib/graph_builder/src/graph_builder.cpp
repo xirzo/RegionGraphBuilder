@@ -2,13 +2,7 @@
 
 #include <ogdf/basic/Graph.h>
 #include <ogdf/basic/GraphAttributes.h>
-#include <ogdf/basic/Graph_d.h>
-#include <ogdf/basic/graphics.h>
 #include <ogdf/fileformats/GraphIO.h>
-#include <ogdf/layered/MedianHeuristic.h>
-#include <ogdf/layered/OptimalHierarchyLayout.h>
-#include <ogdf/layered/OptimalRanking.h>
-#include <ogdf/layered/SugiyamaLayout.h>
 #include <ogdf/planarity/PlanarizationLayout.h>
 
 #include <cstdlib>
@@ -231,7 +225,7 @@ bool graph_builder::build() {
 
     graph_metrics metrics;
 
-    auto m = metrics.calculate_metrics(graph, graph_attribute);
+    graph_metrics::metrics_result m = metrics.calculate_metrics(graph, graph_attribute);
 
     metrics.printMetrics(m);
 
