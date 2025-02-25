@@ -107,7 +107,7 @@ std::expected<country, fetch_error> fetch_country(const std::string& api_key,
 
     c.name = name["common"].get<std::string>();
 
-    if (!name.contains("capital")) {
+    if (!country.contains("capital")) {
         return std::unexpected(fetch_error::value_not_found);
     }
 
