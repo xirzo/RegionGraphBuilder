@@ -1,6 +1,2 @@
 add_subdirectory(fetch)
 add_subdirectory(graph_builder)
-add_subdirectory(json_reader)
-add_subdirectory(json_writer)
-add_subdirectory(metrics)
-add_subdirectory(parser)
