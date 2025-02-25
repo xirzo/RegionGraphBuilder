@@ -17,7 +17,7 @@ struct country {
 };
 
 std::expected<country, std::string> parse(const code_parser::country_code& country_code,
-                                          const std::string& json);
+                                          const nlohmann::json& neighbours);
 }  // namespace neighbour_parser
 
 #endif  // !NEIGHBOUR_PARSER_H

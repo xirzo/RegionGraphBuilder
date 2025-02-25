@@ -1,13 +1,10 @@
 #include "name_parser.h"
-#include "nlohmann/json.hpp"
 
-using namespace nlohmann;
+#include "nlohmann/json.hpp"
 
 namespace name_parser {
 
-std::expected<std::string, std::string> parse(const std::string& text) {
-    nlohmann::json parsed = json::parse(text);
-    
+std::expected<std::string, std::string> parse(const nlohmann::json& parsed) {
     nlohmann::json country = parsed.is_array() ? parsed[0] : parsed;
 
     if (!country.contains("name")) {

@@ -44,7 +44,21 @@ bool graph_builder::build() {
     const auto codes_result = json_reader::read_file(codes_file_name_);
 
     if (!codes_result) {
-        std::cerr << codes_result.error() << std::endl;
+        switch (codes_result.error()) {
+            case json_reader::read_file_error::file_does_not_exist:
+                std::cerr << "File does not exist: " << codes_file_name_ << std::endl;
+                break;
+            case json_reader::read_file_error::failed_to_open:
+                std::cerr << "Failed to open: " << codes_file_name_ << std::endl;
+                break;
+            case json_reader::read_file_error::failed_to_read:
+                std::cerr << "Failed to read: " << codes_file_name_ << std::endl;
+                break;
+            case json_reader::read_file_error::failed_to_parse_json:
+                std::cerr << "Cannot parse: " << codes_file_name_ << std::endl;
+                break;
+        }
+
         return EXIT_FAILURE;
     }
 
@@ -79,7 +93,21 @@ bool graph_builder::build() {
         const auto neighbour_read_result = json_reader::read_file(code.iso_3166_2);
 
         if (!neighbour_read_result) {
-            std::cerr << neighbour_read_result.error() << std::endl;
+            switch (neighbour_read_result.error()) {
+                case json_reader::read_file_error::file_does_not_exist:
+                    std::cerr << "File does not exist: " << code.iso_3166_2 << std::endl;
+                    break;
+                case json_reader::read_file_error::failed_to_open:
+                    std::cerr << "Failed to open: " << code.iso_3166_2 << std::endl;
+                    break;
+                case json_reader::read_file_error::failed_to_read:
+                    std::cerr << "Failed to read: " << code.iso_3166_2 << std::endl;
+                    break;
+                case json_reader::read_file_error::failed_to_parse_json:
+                    std::cerr << "Cannot parse: " << code.iso_3166_2 << std::endl;
+                    break;
+            }
+
             continue;
         }
 
@@ -130,11 +158,29 @@ bool graph_builder::build() {
     auto ctcn_read_result = json_reader::read_file(code_to_country_name_filename);
 
     if (!ctcn_read_result) {
-        std::cerr << ctcn_read_result.error() << std::endl;
+        switch (ctcn_read_result.error()) {
+            case json_reader::read_file_error::file_does_not_exist:
+                std::cerr << "File does not exist: " << code_to_country_name_filename
+                          << std::endl;
+                break;
+            case json_reader::read_file_error::failed_to_open:
+                std::cerr << "Failed to open: " << code_to_country_name_filename
+                          << std::endl;
+                break;
+            case json_reader::read_file_error::failed_to_read:
+                std::cerr << "Failed to read: " << code_to_country_name_filename
+                          << std::endl;
+                break;
+            case json_reader::read_file_error::failed_to_parse_json:
+                std::cerr << "Cannot parse: " << code_to_country_name_filename
+                          << std::endl;
+                break;
+        }
+
         return EXIT_FAILURE;
     }
 
-    nlohmann::json code_to_country_name = nlohmann::json::parse(ctcn_read_result.value());
+    nlohmann::json code_to_country_name = ctcn_read_result.value();
 
     std::vector<named_country> countries;
 

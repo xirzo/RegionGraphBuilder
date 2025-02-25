@@ -8,9 +8,8 @@ using nlohmann::json;
 
 namespace code_parser {
 
-std::expected<std::vector<country_code>, std::string> parse(const std::string& json) {
-    nlohmann::json countries = json::parse(json);
-
+std::expected<std::vector<country_code>, std::string> parse(
+    const nlohmann::json& countries) {
     std::vector<country_code> country_codes;
 
     for (const auto& country : countries) {

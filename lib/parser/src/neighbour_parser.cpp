@@ -5,17 +5,12 @@
 
 #include "code_parser.h"
 #include "nlohmann/json.hpp"
-#include "nlohmann/json_fwd.hpp"
-
-using nlohmann::json;
 
 namespace neighbour_parser {
 
 std::expected<country, std::string> parse(const code_parser::country_code& country_code,
-                                          const std::string& json) {
+                                          const nlohmann::json& neighbours) {
     struct country country{country_code};
-
-    nlohmann::json neighbours = json::parse(json);
 
     for (const auto& neighbour : neighbours) {
         if (!neighbour.contains("country_code")) {
