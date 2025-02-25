@@ -82,4 +82,4 @@ The program will:
 ## ⚠️ Important Notes
 
 - Requires a valid API key for the geodata source
-- API key must be set in the environment variable `geo_data_source_api_key`
+- API key must be set in the environment variable `geo_data_source_api_key`, obtain it from [here](https://www.geodatasource.com/license)
