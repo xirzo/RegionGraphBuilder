@@ -33,7 +33,7 @@ bool graph_builder::build() {
     if (!std::filesystem::exists(codes_file_name_)) {
         const auto code_fetch_result = fetch::fetch_region_codes(region_to_search_in_);
 
-        if (!code_fetch_result.has_value()) {
+        if (!code_fetch_result) {
             std::cerr << code_fetch_result.error() << std::endl;
             return EXIT_FAILURE;
         }
@@ -41,7 +41,7 @@ bool graph_builder::build() {
         auto code_write_result =
             json_writer::write_to_file(code_fetch_result.value(), codes_file_name_);
 
-        if (!code_write_result.has_value()) {
+        if (!code_write_result) {
             std::cerr << code_write_result.error() << std::endl;
             return EXIT_FAILURE;
         }
@@ -49,14 +49,14 @@ bool graph_builder::build() {
 
     const auto codes_result = json_reader::read_file(codes_file_name_);
 
-    if (!codes_result.has_value()) {
+    if (!codes_result) {
         std::cerr << codes_result.error() << std::endl;
         return EXIT_FAILURE;
     }
 
     const auto code_parse_result = code_parser::parse(codes_result.value());
 
-    if (!code_parse_result.has_value()) {
+    if (!code_parse_result) {
         std::cerr << code_parse_result.error() << std::endl;
         return EXIT_FAILURE;
     }
@@ -68,7 +68,7 @@ bool graph_builder::build() {
             const auto neighboring_result = fetch::fetch_neighboring_countries(
                 geo_data_source_api_key_, code.iso_3166_2);
 
-            if (!neighboring_result.has_value()) {
+            if (!neighboring_result) {
                 std::cerr << neighboring_result.error() << std::endl;
                 continue;
             }
@@ -76,7 +76,7 @@ bool graph_builder::build() {
             auto neighbour_write_result =
                 json_writer::write_to_file(neighboring_result.value(), code.iso_3166_2);
 
-            if (!neighbour_write_result.has_value()) {
+            if (!neighbour_write_result) {
                 std::cerr << neighbour_write_result.error() << std::endl;
                 continue;
             }
@@ -84,7 +84,7 @@ bool graph_builder::build() {
 
         const auto neighbour_read_result = json_reader::read_file(code.iso_3166_2);
 
-        if (!neighbour_read_result.has_value()) {
+        if (!neighbour_read_result) {
             std::cerr << neighbour_read_result.error() << std::endl;
             continue;
         }
@@ -92,7 +92,7 @@ bool graph_builder::build() {
         const auto neighbour_parse_result =
             neighbour_parser::parse(code, neighbour_read_result.value());
 
-        if (!neighbour_parse_result.has_value()) {
+        if (!neighbour_parse_result) {
             std::cerr << neighbour_parse_result.error() << std::endl;
             continue;
         }
