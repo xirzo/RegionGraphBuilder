@@ -2,9 +2,9 @@
 
 #include "nlohmann/json.hpp"
 
-namespace name_parser {
+namespace parser {
 
-std::expected<std::string, std::string> parse(const nlohmann::json& parsed) {
+std::expected<std::string, std::string> parse_name(const nlohmann::json& parsed) {
     nlohmann::json country = parsed.is_array() ? parsed[0] : parsed;
 
     if (!country.contains("name")) {
@@ -22,4 +22,4 @@ std::expected<std::string, std::string> parse(const nlohmann::json& parsed) {
     return name["common"].get<std::string>();
 }
 
-}  // namespace name_parser
+}  // namespace parser

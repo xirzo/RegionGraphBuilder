@@ -6,8 +6,8 @@
 
 #include "nlohmann/json_fwd.hpp"
 
-namespace name_parser {
-std::expected<std::string, std::string> parse(const nlohmann::json& parsed);
-}  // namespace name_parser
+namespace parser {
+std::expected<std::string, std::string> parse_name(const nlohmann::json& parsed);
+}  // namespace parser
 
 #endif  // !NAME_PARSER_H

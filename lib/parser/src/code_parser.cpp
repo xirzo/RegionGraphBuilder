@@ -6,9 +6,9 @@
 
 using nlohmann::json;
 
-namespace code_parser {
+namespace parser {
 
-std::expected<std::vector<country_code>, std::string> parse(
+std::expected<std::vector<country_code>, std::string> parse_code(
     const nlohmann::json& countries) {
     std::vector<country_code> country_codes;
 
@@ -24,4 +24,4 @@ std::expected<std::vector<country_code>, std::string> parse(
     return country_codes;
 }
 
-};  // namespace code_parser
+};  // namespace parser

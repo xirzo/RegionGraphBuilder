@@ -7,15 +7,15 @@
 
 #include "nlohmann/json_fwd.hpp"
 
-namespace code_parser {
+namespace parser {
 
 struct country_code {
     const std::string iso_3166_2;
 };
 
-std::expected<std::vector<country_code>, std::string> parse(
+std::expected<std::vector<country_code>, std::string> parse_code(
     const nlohmann::json& countries);
 
-}  // namespace code_parser
+}  // namespace parser
 
 #endif  // !CODE_PARSER_H

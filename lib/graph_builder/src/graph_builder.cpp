@@ -62,14 +62,14 @@ int graph_builder::build() {
         return EXIT_FAILURE;
     }
 
-    const auto code_parse_result = code_parser::parse(codes_result.value());
+    const auto code_parse_result = parser::parse_code(codes_result.value());
 
     if (!code_parse_result) {
         std::cerr << code_parse_result.error() << std::endl;
         return EXIT_FAILURE;
     }
 
-    std::vector<neighbour_parser::country> all_countries;
+    std::vector<parser::country> all_countries;
 
     for (const auto& code : code_parse_result.value()) {
         if (!std::filesystem::exists(code.iso_3166_2)) {
@@ -112,7 +112,7 @@ int graph_builder::build() {
         }
 
         const auto neighbour_parse_result =
-            neighbour_parser::parse(code, neighbour_read_result.value());
+            parser::parse_neighbour(code, neighbour_read_result.value());
 
         if (!neighbour_parse_result) {
             std::cerr << neighbour_parse_result.error() << std::endl;
@@ -136,7 +136,7 @@ int graph_builder::build() {
                 continue;
             }
 
-            auto parse_name_result = name_parser::parse(fetch_country_result.value());
+            auto parse_name_result = parser::parse_name(fetch_country_result.value());
 
             if (!parse_name_result) {
                 std::cerr << parse_name_result.error() << std::endl;

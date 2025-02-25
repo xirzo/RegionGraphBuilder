@@ -1,15 +1,13 @@
 #include "neighbour_parser.h"
 
 #include <string>
-#include <vector>
 
-#include "code_parser.h"
 #include "nlohmann/json.hpp"
 
-namespace neighbour_parser {
+namespace parser {
 
-std::expected<country, std::string> parse(const code_parser::country_code& country_code,
-                                          const nlohmann::json& neighbours) {
+std::expected<country, std::string> parse_neighbour(const country_code& country_code,
+                                                    const nlohmann::json& neighbours) {
     struct country country{country_code};
 
     for (const auto& neighbour : neighbours) {
@@ -24,10 +22,10 @@ std::expected<country, std::string> parse(const code_parser::country_code& count
         }
 
         country.neighbours.emplace_back(
-            code_parser::country_code(neighbour["country_code"].get<std::string>()));
+            parser::country_code(neighbour["country_code"].get<std::string>()));
     }
 
     return country;
 }
 
-}  // namespace neighbour_parser
+}  // namespace parser
