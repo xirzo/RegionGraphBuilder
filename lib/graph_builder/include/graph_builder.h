@@ -38,7 +38,7 @@ public:
         : geo_data_source_api_key_(std::move(geo_data_source_api_key)),
           region_to_search_in_(std::move(region_to_search_in)) {}
 
-    bool build();
+    int build();
 
 private:
     const std::string geo_data_source_api_key_;

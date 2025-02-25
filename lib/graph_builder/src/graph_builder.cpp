@@ -23,7 +23,7 @@
 
 using namespace ogdf;
 
-bool graph_builder::build() {
+int graph_builder::build() {
     if (!std::filesystem::exists(codes_file_name_)) {
         const auto code_fetch_result = fetch::fetch_region_codes(region_to_search_in_);
 
