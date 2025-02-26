@@ -21,6 +21,10 @@ RegionGraphBuilder is a C++ application that creates geographical region graphs.
   - Distance between capitals
 - 🎨 SVG graph visualization using OGDF library
 - 💾 JSON-based data caching for efficient subsequent runs
+  
+## 📝 Example SVG
+
+![europegraph](https://github.com/user-attachments/assets/d2266bfc-453b-464c-9a8b-ba70adfbc3c6)
 
 ## ⚙️ Prerequisites
 
