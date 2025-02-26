@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "nlohmann/json.hpp"
+#include "nlohmann/json_fwd.hpp"
 
 using namespace cpr;
 
@@ -142,13 +143,33 @@ std::expected<country, error> fetch_country(const std::string& api_key,
     if (!country.contains("capital")) {
         return std::unexpected(make_error(
             error::code::value_not_found, "Capital field not found in country data",
-            "Field: capital", response.status_code, name.dump()));
+            "Field: capital", response.status_code, country.dump()));
     }
 
     nlohmann::json capital =
         country["capital"].is_array() ? country["capital"][0] : country["capital"];
 
     c.capital = capital.get<std::string>();
+
+    if (!country.contains("capitalInfo")) {
+        return std::unexpected(make_error(
+            error::code::value_not_found, "Capital info field not found in country data",
+            "Field: capitalInfo", response.status_code, country.dump()));
+    }
+
+    nlohmann::json capital_info = country["capitalInfo"];
+
+    if (!capital_info.contains("latlng")) {
+        return std::unexpected(
+            make_error(error::code::value_not_found,
+                       "Latitude and longitude field not found in capital info data",
+                       "Field: latlng", response.status_code, capital_info.dump()));
+    }
+
+    nlohmann::json latitude_longitude = capital_info["latlng"];
+
+    c.capital_coords = {.latitude = latitude_longitude[0],
+                        .longitude = latitude_longitude[1]};
 
     c.iso_code = iso_code;
 

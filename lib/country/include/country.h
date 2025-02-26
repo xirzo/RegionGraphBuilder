@@ -5,10 +5,16 @@
 #include <string>
 #include <vector>
 
+struct capital_coordinates {
+    double latitude;
+    double longitude;
+};
+
 struct country {
     std::string name;
     std::string iso_code;
     std::string capital;
+    struct capital_coordinates capital_coords;
     std::vector<std::string> neighboring_countries_iso;
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(country, name, iso_code, capital,
