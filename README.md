@@ -18,6 +18,7 @@ RegionGraphBuilder is a C++ application that creates geographical region graphs.
   - Component analysis
   - Chromatic number calculation
   - Clique detection
+  - Distance between capitals
 - 🎨 SVG graph visualization using OGDF library
 - 💾 JSON-based data caching for efficient subsequent runs
 
@@ -64,8 +65,7 @@ export geo_data_api_key="your_api_key_here"
 
 The program will:
 
-1. Fetch region codes if not cached
-2. Retrieve neighboring country data
+1. Fetch data
 3. Build a graph representation
 4. Generate an SVG visualization
 5. Calculate and display graph metrics
