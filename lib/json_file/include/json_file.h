@@ -3,23 +3,18 @@
 
 #include <expected>
 #include <nlohmann/json.hpp>
-#include <string_view>
 
 #include "nlohmann/json_fwd.hpp"
 
 namespace json_file {
 
-enum class write_error {
+enum class write_error { cannot_open_file };
 
-};
+enum class read_error { cannot_open_file, failed_parsing };
 
-enum class read_error {
+std::expected<void, write_error> write(const std::string& filename, nlohmann::json j);
 
-};
-
-std::expected<void, write_error> write(std::string_view filename, nlohmann::json j);
-
-std::expected<nlohmann::json, write_error> read(std::string_view filename);
+std::expected<nlohmann::json, read_error> read(const std::string& filename);
 
 }  // namespace json_file
 

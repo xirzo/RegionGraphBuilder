@@ -11,4 +11,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
-target_link_libraries(country PUBLIC country_headers)
+target_link_libraries(
+  country
+  PRIVATE nlohmann_json::nlohmann_json
+  PUBLIC country_headers)
