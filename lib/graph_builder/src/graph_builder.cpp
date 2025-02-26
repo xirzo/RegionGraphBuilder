@@ -1,7 +1,6 @@
 #include "graph_builder.h"
 
 #include <filesystem>
-#include <format>
 #include <nlohmann/json.hpp>
 #include <unordered_map>
 
@@ -10,44 +9,59 @@
 #include "json_file.h"
 #include "visual.h"
 
+inline graph_builder::error make_error(graph_builder::error::code code,
+                                       std::string message, std::string operation,
+                                       std::string details = "") {
+    return graph_builder::error{.error_code = code,
+                                .message = std::move(message),
+                                .operation = std::move(operation),
+                                .details = std::move(details)};
+}
+
 class graph_builder::impl {
 public:
     explicit impl(std::string api_key) : geo_data_api_key_(std::move(api_key)) {}
 
-    error build(const std::string& region, std::string& error_details);
+    std::expected<void, error> build(const std::string& region);
 
 private:
     std::expected<std::unordered_map<std::string, country>, error> fetch_countries(
-        std::string_view region, std::string& error_details) const;
+        std::string_view region) const;
 
     std::expected<std::unordered_map<std::string, country>, error>
-
     fetch_and_cache_countries(const std::string& region_filename,
-                              const std::string& region,
-                              std::string& error_details) const;
+                              const std::string& region) const;
 
     const std::string geo_data_api_key_;
 };
 
 std::expected<std::unordered_map<std::string, country>, graph_builder::error>
-graph_builder::impl::fetch_countries(std::string_view region,
-                                     std::string& error_details) const {
+graph_builder::impl::fetch_countries(std::string_view region) const {
     auto region_codes_result = fetch::fetch_region_codes(std::string(region));
 
     if (!region_codes_result) {
-        error_details =
-            std::format("region codes fetch error: {} (region: {})",
-                        static_cast<int>(region_codes_result.error()), region);
-        return std::unexpected(error::region_codes_failed);
+        const auto& fetch_err = region_codes_result.error();
+        return std::unexpected(make_error(
+            error::code::region_codes_failed,
+            "Failed to fetch region codes for region '" + std::string(region) + "'",
+            "fetch_region_codes",
+            "Status code: " + std::to_string(fetch_err.status_code) + "\n" +
+                "Context: " + fetch_err.context + "\n" + "Error: " + fetch_err.message +
+                "\n" + "Raw error: " + fetch_err.raw_error));
     }
 
     auto countries_result =
         fetch::fetch_countries(geo_data_api_key_, region_codes_result.value());
 
     if (!countries_result) {
-        error_details = std::format("countries fetch error: {} (region: {})",
-                                    static_cast<int>(countries_result.error()), region);
-        return std::unexpected(error::countries_failed);
+        const auto& fetch_err = countries_result.error();
+        return std::unexpected(make_error(
+            error::code::countries_failed,
+            "Failed to fetch country data for region '" + std::string(region) + "'",
+            "fetch_countries",
+            "Status code: " + std::to_string(fetch_err.status_code) + "\n" +
+                "Context: " + fetch_err.context + "\n" + "Error: " + fetch_err.message +
+                "\n" + "Raw error: " + fetch_err.raw_error));
     }
 
     return countries_result.value();
@@ -55,9 +69,8 @@ graph_builder::impl::fetch_countries(std::string_view region,
 
 std::expected<std::unordered_map<std::string, country>, graph_builder::error>
 graph_builder::impl::fetch_and_cache_countries(const std::string& region_filename,
-                                               const std::string& region,
-                                               std::string& error_details) const {
-    auto countries_result = fetch_countries(region, error_details);
+                                               const std::string& region) const {
+    auto countries_result = fetch_countries(region);
 
     if (!countries_result) {
         return std::unexpected(countries_result.error());
@@ -67,25 +80,25 @@ graph_builder::impl::fetch_and_cache_countries(const std::string& region_filenam
     auto write_result = json_file::write(region_filename, j_umap);
 
     if (!write_result) {
-        error_details = std::format("countries write to file error: {}",
-                                    static_cast<int>(write_result.error()));
-        return std::unexpected(error::countries_write_failed);
+        const auto& json_err = write_result.error();
+        return std::unexpected(make_error(
+            error::code::countries_write_failed, json_err.message, json_err.operation,
+            "File: " + json_err.filename + "\n" + "Details: " + json_err.details));
     }
 
     return countries_result;
 }
 
-graph_builder::error graph_builder::impl::build(const std::string& region,
-                                                std::string& error_details) {
+std::expected<void, graph_builder::error> graph_builder::impl::build(
+    const std::string& region) {
     const std::string region_filename = region + ".json";
     std::unordered_map<std::string, country> countries;
 
     if (!std::filesystem::exists(region_filename)) {
-        auto fetch_and_cache_result =
-            fetch_and_cache_countries(region_filename, region, error_details);
+        auto fetch_and_cache_result = fetch_and_cache_countries(region_filename, region);
 
         if (!fetch_and_cache_result) {
-            return fetch_and_cache_result.error();
+            return std::unexpected(fetch_and_cache_result.error());
         }
 
         countries = fetch_and_cache_result.value();
@@ -93,14 +106,16 @@ graph_builder::error graph_builder::impl::build(const std::string& region,
         auto region_result = json_file::read(region_filename);
 
         if (!region_result) {
-            return error::read_region_file_error;
+            const auto& json_err = region_result.error();
+            return std::unexpected(make_error(
+                error::code::read_region_file_error, json_err.message, json_err.operation,
+                "File: " + json_err.filename + "\n" + "Details: " + json_err.details));
         }
 
-        countries = region_result.value();
+        countries = region_result.value().get<std::unordered_map<std::string, country>>();
     }
 
     export_graph(countries, region + "graph.svg");
-
     return {};
 }
 
@@ -112,7 +127,7 @@ graph_builder::~graph_builder() = default;
 graph_builder::graph_builder(graph_builder&&) noexcept = default;
 graph_builder& graph_builder::operator=(graph_builder&&) noexcept = default;
 
-graph_builder::error graph_builder::build(const std::string& region,
-                                          std::string& error_details) {
-    return pimpl_->build(region, error_details);
+std::expected<void, graph_builder::error> graph_builder::build(
+    const std::string& region) {
+    return pimpl_->build(region);
 }

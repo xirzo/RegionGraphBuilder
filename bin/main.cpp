@@ -17,12 +17,13 @@ int main(void) {
 
     graph_builder builder(geo_data_api_key);
 
-    std::string error_details;
+    auto result = builder.build(region_to_search_in);
 
-    if (auto err = builder.build(region_to_search_in, error_details);
-        err != graph_builder::error{}) {
-        std::cerr << error_details << std::endl;
-        return EXIT_FAILURE;
+    if (!result) {
+        const auto& error = result.error();
+        std::cerr << "Error: " << error.message << std::endl
+                  << "Operation: " << error.operation << std::endl
+                  << "Details: " << error.details << std::endl;
     }
 
     return EXIT_SUCCESS;
