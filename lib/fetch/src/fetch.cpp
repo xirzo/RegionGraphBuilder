@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "country.h"
 #include "nlohmann/json.hpp"
 #include "nlohmann/json_fwd.hpp"
 

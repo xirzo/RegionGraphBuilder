@@ -8,6 +8,8 @@
 struct capital_coordinates {
     double latitude;
     double longitude;
+
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(capital_coordinates, latitude, longitude)
 };
 
 struct country {
