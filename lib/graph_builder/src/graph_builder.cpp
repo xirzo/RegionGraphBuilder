@@ -99,7 +99,7 @@ graph_builder::error graph_builder::impl::build(const std::string& region,
         countries = region_result.value();
     }
 
-    export_graph(countries, "graph.svg");
+    export_graph(countries, region + "graph.svg");
 
     return {};
 }
