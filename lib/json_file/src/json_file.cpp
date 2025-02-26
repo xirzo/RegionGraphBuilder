@@ -9,7 +9,7 @@ namespace json_file {
 std::expected<void, write_error> write(const std::string& filename, nlohmann::json j) {
     std::ofstream output(filename);
 
-    if (output.is_open()) {
+    if (!output.is_open()) {
         return std::unexpected(write_error::cannot_open_file);
     }
 

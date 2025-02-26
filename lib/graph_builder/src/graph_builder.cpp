@@ -37,9 +37,11 @@ fetch_countries(std::string_view region, std::string& error_details,
 
 graph_builder::error graph_builder::build(const std::string& region,
                                           std::string& error_details) {
+    const std::string region_filename = region + ".json";
+
     std::unordered_map<std::string, country> countries;
 
-    if (!std::filesystem::exists(region)) {
+    if (!std::filesystem::exists(region_filename)) {
         auto countries_result = fetch_countries(region, error_details, geo_data_api_key_);
 
         if (!countries_result) {
@@ -50,7 +52,7 @@ graph_builder::error graph_builder::build(const std::string& region,
 
         nlohmann::json j_umap(countries);
 
-        auto write_result = json_file::write(region, j_umap);
+        auto write_result = json_file::write(region_filename, j_umap);
 
         if (!write_result) {
             error_details = std::format("countries write to file error: {}",
@@ -58,7 +60,7 @@ graph_builder::error graph_builder::build(const std::string& region,
             return error::countries_write_failed;
         }
     } else {
-        auto region_result = json_file::read(region);
+        auto region_result = json_file::read(region_filename);
 
         if (!region_result) {
             return error::read_region_file_error;

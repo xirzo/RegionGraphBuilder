@@ -3,6 +3,7 @@
 #include <cpr/cpr.h>
 
 #include <expected>
+#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -139,6 +140,12 @@ std::expected<std::unordered_map<std::string, country>, fetch_error> fetch_count
         auto country_result = fetch_country(api_key, iso_codes[i]);
 
         if (!country_result) {
+            if (country_result.error() == fetch_error::status_code_not_200) {
+                std::cerr << "fetch error: contry with iso code " << iso_codes[i]
+                          << " is not found, skipping..." << std::endl;
+                continue;
+            }
+
             return std::unexpected(country_result.error());
         }
 
