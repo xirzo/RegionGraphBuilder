@@ -4,6 +4,7 @@
 
 #include <expected>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "nlohmann/json.hpp"
@@ -128,6 +129,25 @@ std::expected<country, fetch_error> fetch_country(const std::string& api_key,
     c.neighboring_countries_iso = neighbouring_countries_result.value();
 
     return c;
+}
+
+std::expected<std::unordered_map<std::string, country>, fetch_error> fetch_countries(
+    const std::string& api_key, const std::vector<std::string>& iso_codes) {
+    std::unordered_map<std::string, country> countries;
+
+    for (size_t i = 0; i < iso_codes.size(); i++) {
+        auto country_result = fetch_country(api_key, iso_codes[i]);
+
+        if (!country_result) {
+            return std::unexpected(country_result.error());
+        }
+
+        auto country = country_result.value();
+
+        countries[country.iso_code] = country;
+    }
+
+    return countries;
 }
 
 }  // namespace fetch
