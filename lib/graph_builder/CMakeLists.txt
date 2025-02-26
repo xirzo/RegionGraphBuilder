@@ -13,5 +13,5 @@ target_include_directories(
 
 target_link_libraries(
   graph_builder
-  PRIVATE nlohmann_json::nlohmann_json fetch
-  PUBLIC graph_builder_headers country)
+  PRIVATE nlohmann_json::nlohmann_json fetch json_file country
+  PUBLIC graph_builder_headers)
