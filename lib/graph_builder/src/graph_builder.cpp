@@ -8,6 +8,7 @@
 #include "country.h"
 #include "fetch.h"
 #include "json_file.h"
+#include "visual.h"
 
 class graph_builder::impl {
 public:
@@ -20,6 +21,7 @@ private:
         std::string_view region, std::string& error_details) const;
 
     std::expected<std::unordered_map<std::string, country>, error>
+
     fetch_and_cache_countries(const std::string& region_filename,
                               const std::string& region,
                               std::string& error_details) const;
@@ -56,6 +58,7 @@ graph_builder::impl::fetch_and_cache_countries(const std::string& region_filenam
                                                const std::string& region,
                                                std::string& error_details) const {
     auto countries_result = fetch_countries(region, error_details);
+
     if (!countries_result) {
         return std::unexpected(countries_result.error());
     }
@@ -96,11 +99,7 @@ graph_builder::error graph_builder::impl::build(const std::string& region,
         countries = region_result.value();
     }
 
-    std::unordered_map<std::string, std::string> name_to_iso_code;
-
-    for (const auto& [_, country] : countries) {
-        name_to_iso_code[country.name] = country.iso_code;
-    }
+    export_graph(countries, "graph.svg");
 
     return {};
 }
