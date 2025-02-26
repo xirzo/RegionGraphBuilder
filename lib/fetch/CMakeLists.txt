@@ -12,5 +12,5 @@ target_include_directories(
 
 target_link_libraries(
   fetch
-  PRIVATE cpr::cpr nlohmann_json::nlohmann_json
+  PRIVATE cpr::cpr nlohmann_json::nlohmann_json country
   PUBLIC fetch_headers)

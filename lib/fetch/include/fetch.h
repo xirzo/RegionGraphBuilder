@@ -6,19 +6,14 @@
 #include <unordered_map>
 #include <vector>
 
+#include "country.h"
+
 namespace fetch {
 
 enum class fetch_error {
     status_code_not_200,
     value_not_found,
     parse_error,
-};
-
-struct country {
-    std::string name;
-    std::string iso_code;
-    std::string capital;
-    std::vector<std::string> neighboring_countries_iso;
 };
 
 std::expected<std::vector<std::string>, fetch_error> fetch_region_codes(
