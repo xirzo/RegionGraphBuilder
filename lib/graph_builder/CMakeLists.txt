@@ -13,5 +13,5 @@ target_include_directories(
 
 target_link_libraries(
   graph_builder
-  PRIVATE cpr::cpr nlohmann_json::nlohmann_json fetch
+  PRIVATE nlohmann_json::nlohmann_json fetch
   PUBLIC graph_builder_headers)

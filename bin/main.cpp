@@ -15,9 +15,15 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    graph_builder graph_builder(geo_data_api_key);
+    graph_builder builder(geo_data_api_key);
 
-    graph_builder.build(region_to_search_in);
+    std::string error_details;
+
+    if (auto err = builder.build(region_to_search_in, error_details);
+        err != graph_builder::error{}) {
+        std::cerr << error_details << std::endl;
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }

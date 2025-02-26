@@ -5,14 +5,17 @@
 #include <string>
 
 class graph_builder {
+public:
+    enum class error { region_codes_failed, countries_failed };
+
+    graph_builder(const std::string geo_data_api_key)
+        : geo_data_api_key_(std::move(geo_data_api_key)) {}
+    
+    error build(std::string_view region, std::string& error_details);
+
 private:
     const std::string geo_data_api_key_;
 
-public:
-    graph_builder(const std::string geo_data_api_key)
-        : geo_data_api_key_(std::move(geo_data_api_key)) {}
-
-    void build(const std::string& region);
+    static constexpr std::string_view error_to_string(error err);
 };
-
 #endif  // !GRAPH_BUILDER_H
