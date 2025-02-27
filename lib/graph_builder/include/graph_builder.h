@@ -1,49 +1,41 @@
 #ifndef GRAPH_BUILDER_H
 #define GRAPH_BUILDER_H
 
+#include <expected>
+#include <memory>
 #include <string>
-#include <vector>
-
-struct named_country {
-    std::string name;
-    std::vector<std::string> neighbours;
-};
-
-struct edge_pair {
-    std::string country1;
-    std::string country2;
-
-    edge_pair(const std::string& c1, const std::string& c2) {
-        if (c1 < c2) {
-            country1 = c1;
-            country2 = c2;
-        } else {
-            country1 = c2;
-            country2 = c1;
-        }
-    }
-
-    bool operator<(const edge_pair& other) const {
-        if (country1 != other.country1) {
-            return country1 < other.country1;
-        }
-
-        return country2 < other.country2;
-    }
-};
 
 class graph_builder {
 public:
-    graph_builder(std::string geo_data_source_api_key, std::string region_to_search_in)
-        : geo_data_source_api_key_(std::move(geo_data_source_api_key)),
-          region_to_search_in_(std::move(region_to_search_in)) {}
+    struct error {
+        enum class code {
+            region_codes_failed,
+            countries_failed,
+            countries_write_failed,
+            read_region_file_error
+        };
 
-    int build();
+        code error_code;
+        std::string message;   
+        std::string operation;  
+        std::string details;     
+    };
+
+    explicit graph_builder(std::string geo_data_api_key);
+
+    ~graph_builder();
+
+    graph_builder(graph_builder&& other) noexcept;
+    graph_builder& operator=(graph_builder&& other) noexcept;
+
+    graph_builder(const graph_builder&) = delete;
+    graph_builder& operator=(const graph_builder&) = delete;
+
+    std::expected<void, error> build(const std::string& region);
 
 private:
-    const std::string geo_data_source_api_key_;
-    const std::string region_to_search_in_;
-    const std::string codes_file_name_ = region_to_search_in_ + "codes.json";
+    class impl;
+    std::unique_ptr<impl> pimpl_;
 };
 
-#endif
+#endif  // !GRAPH_BUILDER_H

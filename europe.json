@@ -1,0 +1,552 @@
+{
+    "AD": {
+        "capital": "Andorra la Vella",
+        "iso_code": "AD",
+        "name": "Andorra",
+        "neighboring_countries_iso": [
+            "ES",
+            "FR"
+        ]
+    },
+    "AL": {
+        "capital": "Tirana",
+        "iso_code": "AL",
+        "name": "Albania",
+        "neighboring_countries_iso": [
+            "GR",
+            "ME",
+            "MK",
+            "RS"
+        ]
+    },
+    "AT": {
+        "capital": "Vienna",
+        "iso_code": "AT",
+        "name": "Austria",
+        "neighboring_countries_iso": [
+            "CH",
+            "CZ",
+            "DE",
+            "HU",
+            "IT",
+            "LI",
+            "SI",
+            "SK"
+        ]
+    },
+    "AX": {
+        "capital": "Mariehamn",
+        "iso_code": "AX",
+        "name": "Åland Islands",
+        "neighboring_countries_iso": [
+            ""
+        ]
+    },
+    "BA": {
+        "capital": "Sarajevo",
+        "iso_code": "BA",
+        "name": "Bosnia and Herzegovina",
+        "neighboring_countries_iso": [
+            "HR",
+            "ME",
+            "RS"
+        ]
+    },
+    "BE": {
+        "capital": "Brussels",
+        "iso_code": "BE",
+        "name": "Belgium",
+        "neighboring_countries_iso": [
+            "DE",
+            "FR",
+            "LU",
+            "NL"
+        ]
+    },
+    "BG": {
+        "capital": "Sofia",
+        "iso_code": "BG",
+        "name": "Bulgaria",
+        "neighboring_countries_iso": [
+            "GR",
+            "MK",
+            "RO",
+            "RS",
+            "TR"
+        ]
+    },
+    "BY": {
+        "capital": "Minsk",
+        "iso_code": "BY",
+        "name": "Belarus",
+        "neighboring_countries_iso": [
+            "LT",
+            "LV",
+            "PL",
+            "RU",
+            "UA"
+        ]
+    },
+    "CH": {
+        "capital": "Bern",
+        "iso_code": "CH",
+        "name": "Switzerland",
+        "neighboring_countries_iso": [
+            "AT",
+            "DE",
+            "FR",
+            "IT",
+            "LI"
+        ]
+    },
+    "CY": {
+        "capital": "Nicosia",
+        "iso_code": "CY",
+        "name": "Cyprus",
+        "neighboring_countries_iso": [
+            ""
+        ]
+    },
+    "CZ": {
+        "capital": "Prague",
+        "iso_code": "CZ",
+        "name": "Czechia",
+        "neighboring_countries_iso": [
+            "AT",
+            "DE",
+            "PL",
+            "SK"
+        ]
+    },
+    "DE": {
+        "capital": "Berlin",
+        "iso_code": "DE",
+        "name": "Germany",
+        "neighboring_countries_iso": [
+            "AT",
+            "BE",
+            "CH",
+            "CZ",
+            "DK",
+            "FR",
+            "LU",
+            "NL",
+            "PL"
+        ]
+    },
+    "DK": {
+        "capital": "Copenhagen",
+        "iso_code": "DK",
+        "name": "Denmark",
+        "neighboring_countries_iso": [
+            "DE"
+        ]
+    },
+    "EE": {
+        "capital": "Tallinn",
+        "iso_code": "EE",
+        "name": "Estonia",
+        "neighboring_countries_iso": [
+            "LV",
+            "RU"
+        ]
+    },
+    "ES": {
+        "capital": "Madrid",
+        "iso_code": "ES",
+        "name": "Spain",
+        "neighboring_countries_iso": [
+            "AD",
+            "FR",
+            "GI",
+            "MA",
+            "PT"
+        ]
+    },
+    "FI": {
+        "capital": "Helsinki",
+        "iso_code": "FI",
+        "name": "Finland",
+        "neighboring_countries_iso": [
+            "NO",
+            "RU",
+            "SE"
+        ]
+    },
+    "FO": {
+        "capital": "Tórshavn",
+        "iso_code": "FO",
+        "name": "Faroe Islands",
+        "neighboring_countries_iso": [
+            ""
+        ]
+    },
+    "FR": {
+        "capital": "Paris",
+        "iso_code": "FR",
+        "name": "France",
+        "neighboring_countries_iso": [
+            "AD",
+            "BE",
+            "CH",
+            "DE",
+            "ES",
+            "IT",
+            "LU",
+            "MC"
+        ]
+    },
+    "GB": {
+        "capital": "London",
+        "iso_code": "GB",
+        "name": "United Kingdom",
+        "neighboring_countries_iso": [
+            "IE"
+        ]
+    },
+    "GG": {
+        "capital": "St. Peter Port",
+        "iso_code": "GG",
+        "name": "Guernsey",
+        "neighboring_countries_iso": [
+            ""
+        ]
+    },
+    "GI": {
+        "capital": "Gibraltar",
+        "iso_code": "GI",
+        "name": "Gibraltar",
+        "neighboring_countries_iso": [
+            "ES"
+        ]
+    },
+    "GR": {
+        "capital": "Athens",
+        "iso_code": "GR",
+        "name": "Greece",
+        "neighboring_countries_iso": [
+            "AL",
+            "BG",
+            "MK",
+            "TR"
+        ]
+    },
+    "HR": {
+        "capital": "Zagreb",
+        "iso_code": "HR",
+        "name": "Croatia",
+        "neighboring_countries_iso": [
+            "BA",
+            "HU",
+            "ME",
+            "RS",
+            "SI"
+        ]
+    },
+    "HU": {
+        "capital": "Budapest",
+        "iso_code": "HU",
+        "name": "Hungary",
+        "neighboring_countries_iso": [
+            "AT",
+            "HR",
+            "RO",
+            "RS",
+            "SI",
+            "SK",
+            "UA"
+        ]
+    },
+    "IE": {
+        "capital": "Dublin",
+        "iso_code": "IE",
+        "name": "Ireland",
+        "neighboring_countries_iso": [
+            "GB"
+        ]
+    },
+    "IM": {
+        "capital": "Douglas",
+        "iso_code": "IM",
+        "name": "Isle of Man",
+        "neighboring_countries_iso": [
+            ""
+        ]
+    },
+    "IS": {
+        "capital": "Reykjavik",
+        "iso_code": "IS",
+        "name": "Iceland",
+        "neighboring_countries_iso": [
+            ""
+        ]
+    },
+    "IT": {
+        "capital": "Rome",
+        "iso_code": "IT",
+        "name": "Italy",
+        "neighboring_countries_iso": [
+            "AT",
+            "CH",
+            "FR",
+            "SI",
+            "SM",
+            "VA"
+        ]
+    },
+    "JE": {
+        "capital": "Saint Helier",
+        "iso_code": "JE",
+        "name": "Jersey",
+        "neighboring_countries_iso": [
+            ""
+        ]
+    },
+    "LI": {
+        "capital": "Vaduz",
+        "iso_code": "LI",
+        "name": "Liechtenstein",
+        "neighboring_countries_iso": [
+            "AT",
+            "CH"
+        ]
+    },
+    "LT": {
+        "capital": "Vilnius",
+        "iso_code": "LT",
+        "name": "Lithuania",
+        "neighboring_countries_iso": [
+            "BY",
+            "LV",
+            "PL",
+            "RU"
+        ]
+    },
+    "LU": {
+        "capital": "Luxembourg",
+        "iso_code": "LU",
+        "name": "Luxembourg",
+        "neighboring_countries_iso": [
+            "BE",
+            "DE",
+            "FR"
+        ]
+    },
+    "LV": {
+        "capital": "Riga",
+        "iso_code": "LV",
+        "name": "Latvia",
+        "neighboring_countries_iso": [
+            "BY",
+            "EE",
+            "LT",
+            "RU"
+        ]
+    },
+    "MC": {
+        "capital": "Monaco",
+        "iso_code": "MC",
+        "name": "Monaco",
+        "neighboring_countries_iso": [
+            "FR"
+        ]
+    },
+    "MD": {
+        "capital": "Chișinău",
+        "iso_code": "MD",
+        "name": "Moldova",
+        "neighboring_countries_iso": [
+            "RO",
+            "UA"
+        ]
+    },
+    "ME": {
+        "capital": "Podgorica",
+        "iso_code": "ME",
+        "name": "Montenegro",
+        "neighboring_countries_iso": [
+            "AL",
+            "BA",
+            "HR",
+            "RS"
+        ]
+    },
+    "MK": {
+        "capital": "Skopje",
+        "iso_code": "MK",
+        "name": "North Macedonia",
+        "neighboring_countries_iso": [
+            "AL",
+            "BG",
+            "GR",
+            "RS"
+        ]
+    },
+    "MT": {
+        "capital": "Valletta",
+        "iso_code": "MT",
+        "name": "Malta",
+        "neighboring_countries_iso": [
+            ""
+        ]
+    },
+    "NL": {
+        "capital": "Amsterdam",
+        "iso_code": "NL",
+        "name": "Netherlands",
+        "neighboring_countries_iso": [
+            "BE",
+            "DE"
+        ]
+    },
+    "NO": {
+        "capital": "Oslo",
+        "iso_code": "NO",
+        "name": "Norway",
+        "neighboring_countries_iso": [
+            "FI",
+            "RU",
+            "SE"
+        ]
+    },
+    "PL": {
+        "capital": "Warsaw",
+        "iso_code": "PL",
+        "name": "Poland",
+        "neighboring_countries_iso": [
+            "BY",
+            "CZ",
+            "DE",
+            "LT",
+            "RU",
+            "SK",
+            "UA"
+        ]
+    },
+    "PT": {
+        "capital": "Lisbon",
+        "iso_code": "PT",
+        "name": "Portugal",
+        "neighboring_countries_iso": [
+            "ES"
+        ]
+    },
+    "RO": {
+        "capital": "Bucharest",
+        "iso_code": "RO",
+        "name": "Romania",
+        "neighboring_countries_iso": [
+            "BG",
+            "HU",
+            "MD",
+            "RS",
+            "UA"
+        ]
+    },
+    "RS": {
+        "capital": "Belgrade",
+        "iso_code": "RS",
+        "name": "Serbia",
+        "neighboring_countries_iso": [
+            "AL",
+            "BA",
+            "BG",
+            "HR",
+            "HU",
+            "ME",
+            "MK",
+            "RO"
+        ]
+    },
+    "RU": {
+        "capital": "Moscow",
+        "iso_code": "RU",
+        "name": "Russia",
+        "neighboring_countries_iso": [
+            "AZ",
+            "BY",
+            "CN",
+            "EE",
+            "FI",
+            "GE",
+            "KP",
+            "KZ",
+            "LT",
+            "LV",
+            "MN",
+            "NO",
+            "PL",
+            "UA"
+        ]
+    },
+    "SE": {
+        "capital": "Stockholm",
+        "iso_code": "SE",
+        "name": "Sweden",
+        "neighboring_countries_iso": [
+            "FI",
+            "NO"
+        ]
+    },
+    "SI": {
+        "capital": "Ljubljana",
+        "iso_code": "SI",
+        "name": "Slovenia",
+        "neighboring_countries_iso": [
+            "AT",
+            "HR",
+            "HU",
+            "IT"
+        ]
+    },
+    "SJ": {
+        "capital": "Longyearbyen",
+        "iso_code": "SJ",
+        "name": "Svalbard and Jan Mayen",
+        "neighboring_countries_iso": [
+            ""
+        ]
+    },
+    "SK": {
+        "capital": "Bratislava",
+        "iso_code": "SK",
+        "name": "Slovakia",
+        "neighboring_countries_iso": [
+            "AT",
+            "CZ",
+            "HU",
+            "PL",
+            "UA"
+        ]
+    },
+    "SM": {
+        "capital": "City of San Marino",
+        "iso_code": "SM",
+        "name": "San Marino",
+        "neighboring_countries_iso": [
+            "IT"
+        ]
+    },
+    "UA": {
+        "capital": "Kyiv",
+        "iso_code": "UA",
+        "name": "Ukraine",
+        "neighboring_countries_iso": [
+            "BY",
+            "HU",
+            "MD",
+            "PL",
+            "RO",
+            "RU",
+            "SK"
+        ]
+    },
+    "VA": {
+        "capital": "Vatican City",
+        "iso_code": "VA",
+        "name": "Vatican City",
+        "neighboring_countries_iso": [
+            "IT"
+        ]
+    }
+}

@@ -1,280 +1,133 @@
 #include "graph_builder.h"
 
-#include <ogdf/basic/Graph.h>
-#include <ogdf/basic/GraphAttributes.h>
-#include <ogdf/fileformats/GraphIO.h>
-#include <ogdf/planarity/PlanarizationLayout.h>
-
-#include <cstdlib>
 #include <filesystem>
-#include <iostream>
-#include <set>
-#include <string>
+#include <nlohmann/json.hpp>
 #include <unordered_map>
 
-#include "code_parser.h"
+#include "country.h"
 #include "fetch.h"
-#include "json_reader.h"
-#include "json_writer.h"
-#include "metrics.h"
-#include "name_parser.h"
-#include "neighbour_parser.h"
-#include "nlohmann/json.hpp"
+#include "json_file.h"
+#include "visual.h"
 
-using namespace ogdf;
+inline graph_builder::error make_error(graph_builder::error::code code,
+                                       std::string message, std::string operation,
+                                       std::string details = "") {
+    return graph_builder::error{.error_code = code,
+                                .message = std::move(message),
+                                .operation = std::move(operation),
+                                .details = std::move(details)};
+}
 
-int graph_builder::build() {
-    if (!std::filesystem::exists(codes_file_name_)) {
-        const auto code_fetch_result = fetch::fetch_region_codes(region_to_search_in_);
+class graph_builder::impl {
+public:
+    explicit impl(std::string api_key) : geo_data_api_key_(std::move(api_key)) {}
 
-        if (!code_fetch_result) {
-            std::cerr << code_fetch_result.error() << std::endl;
-            return EXIT_FAILURE;
-        }
+    std::expected<void, error> build(const std::string& region);
 
-        auto code_write_result =
-            json_writer::write_to_file(code_fetch_result.value(), codes_file_name_);
+private:
+    std::expected<std::unordered_map<std::string, country>, error> fetch_countries(
+        std::string_view region) const;
 
-        if (!code_write_result) {
-            std::cerr << code_write_result.error() << std::endl;
-            return EXIT_FAILURE;
-        }
+    std::expected<std::unordered_map<std::string, country>, error>
+    fetch_and_cache_countries(const std::string& region_filename,
+                              const std::string& region) const;
+
+    const std::string geo_data_api_key_;
+};
+
+std::expected<std::unordered_map<std::string, country>, graph_builder::error>
+graph_builder::impl::fetch_countries(std::string_view region) const {
+    auto region_codes_result = fetch::fetch_region_codes(std::string(region));
+
+    if (!region_codes_result) {
+        const auto& fetch_err = region_codes_result.error();
+        return std::unexpected(make_error(
+            error::code::region_codes_failed,
+            "Failed to fetch region codes for region '" + std::string(region) + "'",
+            "fetch_region_codes",
+            "Status code: " + std::to_string(fetch_err.status_code) + "\n" +
+                "Context: " + fetch_err.context + "\n" + "Error: " + fetch_err.message +
+                "\n" + "Raw error: " + fetch_err.raw_error));
     }
 
-    const auto codes_result = json_reader::read_file(codes_file_name_);
+    auto countries_result =
+        fetch::fetch_countries(geo_data_api_key_, region_codes_result.value());
 
-    if (!codes_result) {
-        switch (codes_result.error()) {
-            case json_reader::read_file_error::file_does_not_exist:
-                std::cerr << "File does not exist: " << codes_file_name_ << std::endl;
-                break;
-            case json_reader::read_file_error::failed_to_open:
-                std::cerr << "Failed to open: " << codes_file_name_ << std::endl;
-                break;
-            case json_reader::read_file_error::failed_to_read:
-                std::cerr << "Failed to read: " << codes_file_name_ << std::endl;
-                break;
-            case json_reader::read_file_error::failed_to_parse_json:
-                std::cerr << "Cannot parse: " << codes_file_name_ << std::endl;
-                break;
-        }
-
-        return EXIT_FAILURE;
+    if (!countries_result) {
+        const auto& fetch_err = countries_result.error();
+        return std::unexpected(make_error(
+            error::code::countries_failed,
+            "Failed to fetch country data for region '" + std::string(region) + "'",
+            "fetch_countries",
+            "Status code: " + std::to_string(fetch_err.status_code) + "\n" +
+                "Context: " + fetch_err.context + "\n" + "Error: " + fetch_err.message +
+                "\n" + "Raw error: " + fetch_err.raw_error));
     }
 
-    const auto code_parse_result = parser::parse_code(codes_result.value());
+    return countries_result.value();
+}
 
-    if (!code_parse_result) {
-        std::cerr << code_parse_result.error() << std::endl;
-        return EXIT_FAILURE;
+std::expected<std::unordered_map<std::string, country>, graph_builder::error>
+graph_builder::impl::fetch_and_cache_countries(const std::string& region_filename,
+                                               const std::string& region) const {
+    auto countries_result = fetch_countries(region);
+
+    if (!countries_result) {
+        return std::unexpected(countries_result.error());
     }
 
-    std::vector<parser::country> all_countries;
+    nlohmann::json j_umap(countries_result.value());
+    auto write_result = json_file::write(region_filename, j_umap);
 
-    for (const auto& code : code_parse_result.value()) {
-        if (!std::filesystem::exists(code.iso_3166_2)) {
-            const auto neighboring_result = fetch::fetch_neighboring_countries(
-                geo_data_source_api_key_, code.iso_3166_2);
-
-            if (!neighboring_result) {
-                std::cerr << neighboring_result.error() << std::endl;
-                continue;
-            }
-
-            auto neighbour_write_result =
-                json_writer::write_to_file(neighboring_result.value(), code.iso_3166_2);
-
-            if (!neighbour_write_result) {
-                std::cerr << neighbour_write_result.error() << std::endl;
-                continue;
-            }
-        }
-
-        const auto neighbour_read_result = json_reader::read_file(code.iso_3166_2);
-
-        if (!neighbour_read_result) {
-            switch (neighbour_read_result.error()) {
-                case json_reader::read_file_error::file_does_not_exist:
-                    std::cerr << "File does not exist: " << code.iso_3166_2 << std::endl;
-                    break;
-                case json_reader::read_file_error::failed_to_open:
-                    std::cerr << "Failed to open: " << code.iso_3166_2 << std::endl;
-                    break;
-                case json_reader::read_file_error::failed_to_read:
-                    std::cerr << "Failed to read: " << code.iso_3166_2 << std::endl;
-                    break;
-                case json_reader::read_file_error::failed_to_parse_json:
-                    std::cerr << "Cannot parse: " << code.iso_3166_2 << std::endl;
-                    break;
-            }
-
-            continue;
-        }
-
-        const auto neighbour_parse_result =
-            parser::parse_neighbour(code, neighbour_read_result.value());
-
-        if (!neighbour_parse_result) {
-            std::cerr << neighbour_parse_result.error() << std::endl;
-            continue;
-        }
-
-        all_countries.push_back(neighbour_parse_result.value());
+    if (!write_result) {
+        const auto& json_err = write_result.error();
+        return std::unexpected(make_error(
+            error::code::countries_write_failed, json_err.message, json_err.operation,
+            "File: " + json_err.filename + "\n" + "Details: " + json_err.details));
     }
 
-    const string code_to_country_name_filename =
-        region_to_search_in_ + "code_to_country_name.json";
+    return countries_result;
+}
 
-    nlohmann::json ctcn;
+std::expected<void, graph_builder::error> graph_builder::impl::build(
+    const std::string& region) {
+    const std::string region_filename = region + ".json";
+    std::unordered_map<std::string, country> countries;
 
-    if (!std::filesystem::exists(code_to_country_name_filename)) {
-        for (const auto& country : all_countries) {
-            auto fetch_country_result = fetch::fetch_country(country.code.iso_3166_2);
+    if (!std::filesystem::exists(region_filename)) {
+        auto fetch_and_cache_result = fetch_and_cache_countries(region_filename, region);
 
-            if (!fetch_country_result) {
-                std::cerr << fetch_country_result.error() << std::endl;
-                continue;
-            }
-
-            auto parse_name_result = parser::parse_name(fetch_country_result.value());
-
-            if (!parse_name_result) {
-                std::cerr << parse_name_result.error() << std::endl;
-                continue;
-            }
-
-            ctcn[country.code.iso_3166_2] = parse_name_result.value();
+        if (!fetch_and_cache_result) {
+            return std::unexpected(fetch_and_cache_result.error());
         }
 
-        auto ctcn_write_result =
-            json_writer::write_json_to_file(ctcn, code_to_country_name_filename);
+        countries = fetch_and_cache_result.value();
+    } else {
+        auto region_result = json_file::read(region_filename);
 
-        if (!ctcn_write_result) {
-            std::cerr << ctcn_write_result.error() << std::endl;
-            return EXIT_FAILURE;
+        if (!region_result) {
+            const auto& json_err = region_result.error();
+            return std::unexpected(make_error(
+                error::code::read_region_file_error, json_err.message, json_err.operation,
+                "File: " + json_err.filename + "\n" + "Details: " + json_err.details));
         }
+
+        countries = region_result.value().get<std::unordered_map<std::string, country>>();
     }
 
-    auto ctcn_read_result = json_reader::read_file(code_to_country_name_filename);
+    export_graph(countries, region + "graph.svg");
+    return {};
+}
 
-    if (!ctcn_read_result) {
-        switch (ctcn_read_result.error()) {
-            case json_reader::read_file_error::file_does_not_exist:
-                std::cerr << "File does not exist: " << code_to_country_name_filename
-                          << std::endl;
-                break;
-            case json_reader::read_file_error::failed_to_open:
-                std::cerr << "Failed to open: " << code_to_country_name_filename
-                          << std::endl;
-                break;
-            case json_reader::read_file_error::failed_to_read:
-                std::cerr << "Failed to read: " << code_to_country_name_filename
-                          << std::endl;
-                break;
-            case json_reader::read_file_error::failed_to_parse_json:
-                std::cerr << "Cannot parse: " << code_to_country_name_filename
-                          << std::endl;
-                break;
-        }
+graph_builder::graph_builder(std::string geo_data_api_key)
+    : pimpl_(std::make_unique<impl>(std::move(geo_data_api_key))) {}
 
-        return EXIT_FAILURE;
-    }
+graph_builder::~graph_builder() = default;
 
-    nlohmann::json code_to_country_name = ctcn_read_result.value();
+graph_builder::graph_builder(graph_builder&&) noexcept = default;
+graph_builder& graph_builder::operator=(graph_builder&&) noexcept = default;
 
-    std::vector<named_country> countries;
-
-    for (const auto& country : all_countries) {
-        named_country c;
-
-        if (code_to_country_name.find(country.code.iso_3166_2) ==
-            code_to_country_name.end()) {
-            continue;
-        }
-
-        if (code_to_country_name[country.code.iso_3166_2].is_null()) {
-            continue;
-        }
-
-        c.name = code_to_country_name[country.code.iso_3166_2].get<std::string>();
-
-        for (const auto& neighbour : country.neighbours) {
-            if (code_to_country_name.find(neighbour.iso_3166_2) ==
-                code_to_country_name.end()) {
-                continue;
-            }
-
-            if (code_to_country_name[neighbour.iso_3166_2].is_null()) {
-                continue;
-            }
-
-            c.neighbours.emplace_back(
-                code_to_country_name[neighbour.iso_3166_2].get<std::string>());
-        }
-
-        countries.push_back(c);
-    }
-
-    std::unordered_map<std::string, node> node_to_country;
-    Graph graph;
-    GraphAttributes graph_attribute(
-        graph, GraphAttributes::nodeGraphics | GraphAttributes::edgeGraphics |
-                   GraphAttributes::nodeLabel | GraphAttributes::edgeLabel |
-                   GraphAttributes::edgeStyle | GraphAttributes::edgeArrow |
-                   GraphAttributes::nodeStyle
-
-    );
-
-    graph_attribute.directed() = false;
-
-    for (const auto& country : countries) {
-        if (!node_to_country.contains(country.name)) {
-            node v = graph.newNode();
-            graph_attribute.label(v) = country.name;
-
-            graph_attribute.width(v) = 120.0;
-            graph_attribute.height(v) = 80.0;
-
-            graph_attribute.shape(v) = Shape::RoundedRect;
-
-            node_to_country[country.name] = v;
-        }
-    }
-
-    std::set<edge_pair> added_edges;
-
-    for (const auto& country : countries) {
-        auto source_it = node_to_country.find(country.name);
-
-        if (source_it != node_to_country.end()) {
-            for (const auto& neighbour : country.neighbours) {
-                auto target_it = node_to_country.find(neighbour);
-
-                if (target_it != node_to_country.end()) {
-                    edge_pair edge_pair(country.name, neighbour);
-
-                    if (added_edges.insert(edge_pair).second) {
-                        edge e = graph.newEdge(source_it->second, target_it->second);
-                        graph_attribute.strokeWidth(e) = 2.0;
-                        graph_attribute.arrowType(e) = EdgeArrow::None;
-                    }
-                }
-            }
-        }
-    }
-
-    PlanarizationLayout planar_layout;
-
-    planar_layout.call(graph_attribute);
-
-    GraphIO::write(graph_attribute, region_to_search_in_ + "graph.svg", GraphIO::drawSVG);
-
-    graph_metrics_calculator calculator;
-
-    graph_metrics_calculator::metrics metrics =
-        calculator.calculate_metrics(graph, graph_attribute);
-
-    calculator.print_metrics(metrics);
-
-    return EXIT_SUCCESS;
+std::expected<void, graph_builder::error> graph_builder::build(
+    const std::string& region) {
+    return pimpl_->build(region);
 }
