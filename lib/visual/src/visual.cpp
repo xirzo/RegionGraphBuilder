@@ -10,6 +10,7 @@
 #include <string>
 
 #include "distance_math.cpp"
+#include "metrics.h"
 
 using namespace ogdf;
 
@@ -92,6 +93,10 @@ void export_graph(std::unordered_map<std::string, country>& countries,
     PlanarizationLayout planar_layout;
 
     planar_layout.call(graph_attribute);
+
+    auto m = calculate_metrics(graph, graph_attribute);
+
+    print_metrics(m);
 
     GraphIO::write(graph_attribute, filename, GraphIO::drawSVG);
 }

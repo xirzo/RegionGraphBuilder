@@ -13,5 +13,5 @@ target_include_directories(
 
 target_link_libraries(
   visual
-  PRIVATE country OGDF COIN nlohmann_json::nlohmann_json
+  PRIVATE country OGDF COIN nlohmann_json::nlohmann_json metrics
   PUBLIC visual_headers)
