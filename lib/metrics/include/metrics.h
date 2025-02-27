@@ -17,7 +17,7 @@ typedef struct {
     int biggest_component_min_degree;
     int biggest_component_diameter;
     std::vector<int> biggest_component_centers;
-    int cyclomatic_numbre;
+    int cyclomatic_number;
     int largest_clique;
     int max_induced_eulerian_subgraph;
     int max_induced_hamiltonian_subgraph;

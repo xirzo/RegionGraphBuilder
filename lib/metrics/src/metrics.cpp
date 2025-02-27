@@ -153,7 +153,7 @@ metrics calculate_metrics(ogdf::Graph graph, ogdf::GraphAttributes graph_attribu
 
     m.biggest_component_centers = find_graph_centers(largest_component);
 
-    m.cyclomatic_numbre = m.number_of_edges - m.number_of_vertices + m.components;
+    m.cyclomatic_number = m.number_of_edges - m.number_of_vertices + m.components;
 
     ogdf::BCTree bcTree(graph);
     m.blocks = bcTree.numberOfBComps();
@@ -192,7 +192,7 @@ void print_metrics(metrics m) {
 
     std::cout << std::endl;
 
-    std::cout << "Cyclomatic number: " << m.cyclomatic_numbre << std::endl;
+    std::cout << "Cyclomatic number: " << m.cyclomatic_number << std::endl;
     std::cout << "Size of largest clique: " << m.largest_clique << std::endl;
     std::cout << "Maximum induced Eulerian subgraph size: "
               << m.max_induced_eulerian_subgraph << std::endl;
