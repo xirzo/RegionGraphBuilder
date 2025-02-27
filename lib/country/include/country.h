@@ -19,7 +19,7 @@ struct country {
     struct capital_coordinates capital_coords;
     std::vector<std::string> neighboring_countries_iso;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(country, name, iso_code, capital,
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(country, name, iso_code, capital, capital_coords,
                                    neighboring_countries_iso)
 };
 
