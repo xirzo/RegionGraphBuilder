@@ -127,27 +127,28 @@ metrics calculate_metrics(ogdf::Graph graph, ogdf::GraphAttributes graph_attribu
         component_sizes[component_map[v]]++;
     }
 
-    int largestCompIdx =
+    int largest_comp_idx =
         std::distance(component_sizes.begin(),
                       std::max_element(component_sizes.begin(), component_sizes.end()));
-    m.biggest_component = component_sizes[largestCompIdx];
+    m.biggest_component = component_sizes[largest_comp_idx];
 
     ogdf::Graph largest_component;
 
-    extract_component(largest_component, graph, component_map, largestCompIdx);
+    extract_component(largest_component, graph, component_map, largest_comp_idx);
 
-    int maxDegree = 0;
-    int minDegree = std::numeric_limits<int>::max();
+    int max_degree = 0;
+    int min_degree = std::numeric_limits<int>::max();
+
     for (ogdf::node v : largest_component.nodes) {
         int degree = v->degree();
-        maxDegree = std::max(maxDegree, degree);
-        minDegree = std::min(minDegree, degree);
+        max_degree = std::max(max_degree, degree);
+        min_degree = std::min(min_degree, degree);
     }
 
-    m.biggest_component_max_degree = maxDegree;
-    m.biggest_component_min_degree = minDegree;
+    m.biggest_component_max_degree = max_degree;
+    m.biggest_component_min_degree = min_degree;
 
-    m.biggest_component_chromatic_number = maxDegree + 1;
+    m.biggest_component_chromatic_number = max_degree + 1;
 
     m.biggest_component_diameter = calculate_diameter(largest_component);
 

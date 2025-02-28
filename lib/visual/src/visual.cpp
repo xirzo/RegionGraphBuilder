@@ -96,7 +96,7 @@ void export_graph(std::unordered_map<std::string, country>& countries,
 
     auto m = calculate_metrics(graph, graph_attribute);
 
-    print_metrics(m);
+    print_metrics(m, graph_attribute);
 
     GraphIO::write(graph_attribute, filename, GraphIO::drawSVG);
 }
