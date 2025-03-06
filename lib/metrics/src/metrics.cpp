@@ -6,9 +6,28 @@
 #include <ogdf/graphalg/ShortestPathAlgorithms.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <iostream>
 #include <limits>
 #include <vector>
+
+typedef struct metrics
+{
+    std::size_t number_of_vertices;
+    std::size_t number_of_edges;
+    int components;
+    int biggest_component;
+    int biggest_component_chromatic_number;
+    int biggest_component_max_degree;
+    int biggest_component_min_degree;
+    int biggest_component_diameter;
+    std::vector<int> biggest_component_centers;
+    int cyclomatic_number;
+    int largest_clique;
+    int max_induced_eulerian_subgraph;
+    int max_induced_hamiltonian_subgraph;
+    int blocks;
+} metrics;
 
 void extract_component(ogdf::Graph& subgraph, const ogdf::Graph& graph,
                        const ogdf::NodeArray<int>& components, int component_id) {
@@ -109,17 +128,17 @@ int find_max_clique(const ogdf::Graph& G) {
     return max_clique_size;
 }
 
-metrics calculate_metrics(ogdf::Graph graph, ogdf::GraphAttributes graph_attributes) {
-    metrics m;
+metrics* calculate_metrics(ogdf::Graph graph, ogdf::GraphAttributes graph_attributes) {
+    metrics* m = new metrics();
 
-    m.number_of_vertices = graph.numberOfNodes();
-    m.number_of_edges = graph.numberOfEdges();
+    m->number_of_vertices = graph.numberOfNodes();
+    m->number_of_edges = graph.numberOfEdges();
 
     ogdf::NodeArray<int> component_map(graph);
 
     int number_of_component = ogdf::connectedComponents(graph, component_map);
 
-    m.components = number_of_component;
+    m->components = number_of_component;
 
     std::vector<int> component_sizes(number_of_component, 0);
 
@@ -130,7 +149,7 @@ metrics calculate_metrics(ogdf::Graph graph, ogdf::GraphAttributes graph_attribu
     int largest_comp_idx =
         std::distance(component_sizes.begin(),
                       std::max_element(component_sizes.begin(), component_sizes.end()));
-    m.biggest_component = component_sizes[largest_comp_idx];
+    m->biggest_component = component_sizes[largest_comp_idx];
 
     ogdf::Graph largest_component;
 
@@ -145,59 +164,71 @@ metrics calculate_metrics(ogdf::Graph graph, ogdf::GraphAttributes graph_attribu
         min_degree = std::min(min_degree, degree);
     }
 
-    m.biggest_component_max_degree = max_degree;
-    m.biggest_component_min_degree = min_degree;
+    m->biggest_component_max_degree = max_degree;
+    m->biggest_component_min_degree = min_degree;
 
-    m.biggest_component_chromatic_number = max_degree + 1;
+    m->biggest_component_chromatic_number = max_degree + 1;
 
-    m.biggest_component_diameter = calculate_diameter(largest_component);
+    m->biggest_component_diameter = calculate_diameter(largest_component);
 
-    m.biggest_component_centers = find_graph_centers(largest_component);
+    m->biggest_component_centers = find_graph_centers(largest_component);
 
-    m.cyclomatic_number = m.number_of_edges - m.number_of_vertices + m.components;
+    m->cyclomatic_number = m->number_of_edges - m->number_of_vertices + m->components;
 
     ogdf::BCTree bcTree(graph);
-    m.blocks = bcTree.numberOfBComps();
+    m->blocks = bcTree.numberOfBComps();
 
-    m.largest_clique = find_max_clique(graph);
+    m->largest_clique = find_max_clique(graph);
 
-    m.max_induced_eulerian_subgraph = 0;
-    m.max_induced_hamiltonian_subgraph = 0;
+    m->max_induced_eulerian_subgraph = 0;
+    m->max_induced_hamiltonian_subgraph = 0;
 
     return m;
 }
 
-void print_metrics(metrics m) {
-    std::cout << "Number of vertices: " << m.number_of_vertices << std::endl;
-    std::cout << "Number of edges: " << m.number_of_edges << std::endl;
-    std::cout << "Number of connected components: " << m.components << std::endl;
-    std::cout << "Size of biggest component: " << m.biggest_component << std::endl;
+void print_metrics(metrics* m, ogdf::GraphAttributes& ga) {
+    if (m == nullptr) {
+        std::cerr << "Error: Null metrics pointer" << std::endl;
+        return;
+    }
+
+    std::cout << "Number of vertices: " << m->number_of_vertices << std::endl;
+    std::cout << "Number of edges: " << m->number_of_edges << std::endl;
+    std::cout << "Number of connected components: " << m->components << std::endl;
+    std::cout << "Size of biggest component: " << m->biggest_component << std::endl;
     std::cout << "Biggest component - chromatic number estimate: "
-              << m.biggest_component_chromatic_number << std::endl;
-    std::cout << "Biggest component - max degree: " << m.biggest_component_max_degree
+              << m->biggest_component_chromatic_number << std::endl;
+    std::cout << "Biggest component - max degree: " << m->biggest_component_max_degree
               << std::endl;
-    std::cout << "Biggest component - min degree: " << m.biggest_component_min_degree
+    std::cout << "Biggest component - min degree: " << m->biggest_component_min_degree
               << std::endl;
-    std::cout << "Biggest component - diameter: " << m.biggest_component_diameter
+    std::cout << "Biggest component - diameter: " << m->biggest_component_diameter
               << std::endl;
 
     std::cout << "Biggest component - centers: ";
 
-    for (size_t i = 0; i < m.biggest_component_centers.size(); ++i) {
-        std::cout << m.biggest_component_centers[i];
+    for (size_t i = 0; i < m->biggest_component_centers.size(); ++i) {
+        std::cout << m->biggest_component_centers[i];
 
-        if (i < m.biggest_component_centers.size() - 1) {
+        if (i < m->biggest_component_centers.size() - 1) {
             std::cout << ", ";
         }
     }
 
     std::cout << std::endl;
 
-    std::cout << "Cyclomatic number: " << m.cyclomatic_number << std::endl;
-    std::cout << "Size of largest clique: " << m.largest_clique << std::endl;
+    std::cout << "Cyclomatic number: " << m->cyclomatic_number << std::endl;
+    std::cout << "Size of largest clique: " << m->largest_clique << std::endl;
     std::cout << "Maximum induced Eulerian subgraph size: "
-              << m.max_induced_eulerian_subgraph << std::endl;
+              << m->max_induced_eulerian_subgraph << std::endl;
     std::cout << "Maximum induced Hamiltonian subgraph size: "
-              << m.max_induced_hamiltonian_subgraph << std::endl;
-    std::cout << "Number of blocks (biconnected components): " << m.blocks << std::endl;
+              << m->max_induced_hamiltonian_subgraph << std::endl;
+
+    std::cout << "Number of blocks (biconnected components): " << m->blocks << std::endl;
+}
+
+void delete_metrics(metrics* m) {
+    if (m != nullptr) {
+        delete m;
+    }
 }

@@ -94,9 +94,11 @@ void export_graph(std::unordered_map<std::string, country>& countries,
 
     planar_layout.call(graph_attribute);
 
-    auto m = calculate_metrics(graph, graph_attribute);
+    metrics* m = calculate_metrics(graph, graph_attribute);
 
     print_metrics(m, graph_attribute);
+
+    delete_metrics(m);
 
     GraphIO::write(graph_attribute, filename, GraphIO::drawSVG);
 }
