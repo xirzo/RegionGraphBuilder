@@ -24,7 +24,8 @@ RegionGraphBuilder is a C++ application that creates geographical region graphs.
   
 ## 📝 Example SVG
 
-![europegraph](https://github.com/user-attachments/assets/d2266bfc-453b-464c-9a8b-ba70adfbc3c6)
+![europegraph](https://github.com/user-attachments/assets/51e90ca7-d0fd-47de-849b-f2b30f9091ad)
+
 
 ## ⚙️ Prerequisites
 
