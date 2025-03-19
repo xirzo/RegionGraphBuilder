@@ -1,7 +1,7 @@
 # 🗺️ RegionGraphBuilder
 
-[![C++](https://img.shields.io/badge/C%2B%2B-90.1%25-00599C?logo=c%2B%2B&logoColor=white)](https://github.com/xirzo/RegionGraphBuilder)
-[![CMake](https://img.shields.io/badge/CMake-9.9%25-064F8C?logo=cmake&logoColor=white)](https://github.com/xirzo/RegionGraphBuilder)
+[![C++](https://img.shields.io/badge/C%2B%2B-89.1%25-00599C?logo=c%2B%2B&logoColor=white)](https://github.com/xirzo/RegionGraphBuilder)
+[![CMake](https://img.shields.io/badge/CMake-10.0%25-064F8C?logo=cmake&logoColor=white)](https://github.com/xirzo/RegionGraphBuilder)
 
 ## 📝 Description
 
